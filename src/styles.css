@@ -173,27 +173,52 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.03em;
+    font-weight: 800;
+    letter-spacing: -0.035em;
   }
 }
 
 @utility section-pad {
-  padding-top: 5.5rem;
-  padding-bottom: 5.5rem;
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+@utility script {
+  font-family: var(--font-script);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--brand);
 }
 
 @utility eyebrow {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--brand-dark);
+  font-family: var(--font-script);
+  font-size: 1.9rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brand);
+}
+
+@utility blob {
+  border-radius: 56% 44% 48% 52% / 46% 42% 58% 54%;
+  overflow: hidden;
+}
+
+@utility topo {
+  background-color: var(--mint);
+  background-image: radial-gradient(
+      circle at 20% 30%,
+      color-mix(in oklab, var(--brand) 8%, transparent) 0 1px,
+      transparent 1px
+    );
+  background-size: 26px 26px;
 }
 
 @utility card-lift {
   transition: transform 0.35s ease, box-shadow 0.35s ease;
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 24px 48px -24px color-mix(in oklab, var(--ink) 45%, transparent);
+    transform: translateY(-8px);
+    box-shadow: 0 28px 55px -28px color-mix(in oklab, var(--ink) 40%, transparent);
   }
 }
+
