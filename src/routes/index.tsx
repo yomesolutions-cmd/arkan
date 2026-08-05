@@ -1,12 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Plane,
-  Hotel,
-  Compass,
   MapPin,
+  Flag,
   CalendarDays,
-  Users,
+  User,
   Search,
   Star,
   ShieldCheck,
@@ -21,6 +19,7 @@ import {
   Facebook,
   Instagram,
   Send,
+  ArrowRight,
 } from "lucide-react";
 
 import logo from "@/assets/arkan-logo.png.asset.json";
@@ -34,17 +33,17 @@ import about from "@/assets/about.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Arkan Travel — Flights, Hotels & Tour Packages" },
+      { title: "Arkan Travel — Discover the Most Engaging Places" },
       {
         name: "description",
         content:
-          "Arkan Travel and Tourism Agency: book flights, hotels and curated tour packages worldwide with comfort and safety.",
+          "Arkan Travel and Tourism Agency: flights, hotels and curated tour packages worldwide, arranged end to end with comfort and safety.",
       },
-      { property: "og:title", content: "Arkan Travel — Flights, Hotels & Tour Packages" },
+      { property: "og:title", content: "Arkan Travel — Discover the Most Engaging Places" },
       {
         property: "og:description",
         content:
-          "Book flights, hotels and curated tour packages worldwide with Arkan Travel. Comfort and safety, every trip.",
+          "Flights, hotels and curated tour packages worldwide with Arkan Travel. Comfort and safety, every trip.",
       },
     ],
   }),
@@ -53,8 +52,8 @@ export const Route = createFileRoute("/")({
 
 const navLinks = [
   { label: "Home", href: "#home" },
+  { label: "Tours", href: "#packages" },
   { label: "Destinations", href: "#destinations" },
-  { label: "Packages", href: "#packages" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
@@ -121,20 +120,13 @@ const testimonials = [
   },
 ];
 
-const searchTabs = [
-  { id: "flights", label: "Flights", icon: Plane },
-  { id: "hotels", label: "Hotels", icon: Hotel },
-  { id: "tours", label: "Tours", icon: Compass },
-];
-
 function Index() {
-  const [tab, setTab] = useState("flights");
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground" id="home">
       {/* Top bar */}
-      <div className="hidden bg-ink text-background/90 lg:block">
+      <div className="hidden bg-ink text-background/85 lg:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5 text-xs">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-2">
@@ -154,28 +146,33 @@ function Index() {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-50 bg-background">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <a href="#home" className="flex items-center">
             <img src={logo.url} alt="Arkan Travel logo" className="h-14 w-auto" width={160} height={160} />
           </a>
-          <nav className="hidden items-center gap-9 lg:flex">
-            {navLinks.map((l) => (
+          <nav className="hidden items-center gap-10 lg:flex">
+            {navLinks.map((l, i) => (
               <a
                 key={l.label}
                 href={l.href}
-                className="text-sm font-semibold text-ink transition-colors hover:text-brand-dark"
+                className={`text-[0.95rem] font-medium transition-colors hover:text-coral ${
+                  i === 0 ? "text-coral" : "text-ink"
+                }`}
               >
                 {l.label}
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
+            <a href="#contact" className="hidden text-[0.95rem] font-medium text-ink hover:text-coral md:inline">
+              Login
+            </a>
             <a
               href="#contact"
-              className="hidden rounded-full bg-brand px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-dark sm:inline-flex"
+              className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
             >
-              Book Now
+              Sign Up
             </a>
             <button
               aria-label="Toggle menu"
@@ -203,94 +200,68 @@ function Index() {
       </header>
 
       {/* Hero */}
-      <section className="relative">
-        <img
-          src={hero}
-          alt="Turquoise coastline at golden hour"
-          width={1920}
-          height={1088}
-          className="absolute inset-0 size-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/85 via-ink/60 to-ink/25" />
-        <div className="relative mx-auto max-w-7xl px-6 pb-40 pt-24 md:pt-32">
-          <p className="eyebrow text-brand">Travel and Tourism Agency</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] text-background md:text-6xl">
-            Explore the world with comfort and safety
-          </h1>
-          <p className="mt-5 max-w-xl text-base text-background/80 md:text-lg">
-            Flights, hotels, visas and handcrafted tour packages — arranged end to end by the Arkan Travel team.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#packages"
-              className="rounded-full bg-brand px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-dark"
-            >
-              Discover Packages
-            </a>
-            <a
-              href="#about"
-              className="rounded-full border border-background/40 px-7 py-3.5 text-sm font-semibold text-background transition-colors hover:bg-background/10"
-            >
-              Why Arkan
-            </a>
+      <section className="topo relative overflow-hidden">
+        {/* decorative shapes */}
+        <div className="pointer-events-none absolute -left-16 -top-16 size-40 rounded-full bg-coral" />
+        <div className="pointer-events-none absolute right-24 top-24 size-36 rounded-full bg-sun" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/2 size-56 -translate-x-1/2 rounded-full bg-brand" />
+
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-28 pt-16 lg:grid-cols-2 lg:pb-36">
+          <div>
+            <p className="eyebrow -rotate-3">Natural beauty</p>
+            <h1 className="mt-4 max-w-xl text-5xl font-extrabold leading-[1.05] text-ink md:text-6xl lg:text-[4.25rem]">
+              Discover the most engaging places
+            </h1>
+            <p className="mt-6 max-w-md text-base text-muted-foreground">
+              Less planning, more travelling — flights, hotels, visas and tours arranged by Arkan Travel.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="blob relative mx-auto aspect-square w-full max-w-xl">
+              <img
+                src={hero}
+                alt="Turquoise coastline at golden hour"
+                width={1920}
+                height={1088}
+                className="size-full object-cover"
+              />
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* Search widget */}
-      <div className="relative z-10 mx-auto -mt-28 max-w-6xl px-6">
-        <div className="rounded-2xl bg-card p-5 shadow-[0_30px_70px_-40px_var(--ink)] md:p-7">
-          <div className="flex flex-wrap gap-2">
-            {searchTabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
-                  tab === t.id
-                    ? "bg-brand text-primary-foreground"
-                    : "bg-secondary text-muted-foreground hover:text-ink"
-                }`}
-              >
-                <t.icon className="size-4" />
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-4">
-            <Field icon={MapPin} label={tab === "flights" ? "From" : "Destination"} placeholder="Istanbul, TR" />
-            <Field
-              icon={tab === "flights" ? MapPin : CalendarDays}
-              label={tab === "flights" ? "To" : "Check in"}
-              placeholder={tab === "flights" ? "Dubai, AE" : "12 Aug 2026"}
-            />
-            <Field icon={CalendarDays} label="Departure" placeholder="12 Aug 2026" />
-            <div className="flex items-end gap-3">
-              <Field icon={Users} label="Guests" placeholder="2 adults" className="flex-1" />
+        {/* Search card */}
+        <div className="relative z-10 mx-auto -mt-16 max-w-5xl px-6 pb-24">
+          <div className="rounded-xl bg-card p-6 shadow-[0_30px_70px_-45px_var(--ink)] md:p-7">
+            <div className="grid gap-6 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+              <Field icon={MapPin} label="Destination" placeholder="Where are you going?" />
+              <Field icon={Flag} label="Activity" placeholder="Activity" />
+              <Field icon={CalendarDays} label="Dates" placeholder="12 Aug 2026" />
+              <Field icon={User} label="Guest" placeholder="2 adults" />
               <button
                 aria-label="Search"
-                className="mb-0.5 rounded-xl bg-brand p-4 text-primary-foreground transition-colors hover:bg-brand-dark"
+                className="mt-auto flex h-14 items-center justify-center rounded-md bg-coral px-7 text-primary-foreground transition-colors hover:bg-coral-dark"
               >
                 <Search className="size-5" />
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Destinations */}
       <section id="destinations" className="section-pad mx-auto max-w-7xl px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="eyebrow">Top destinations</p>
-            <h2 className="mt-2 text-3xl font-bold md:text-4xl">Places travellers love most</h2>
+            <p className="eyebrow -rotate-2">Top destinations</p>
+            <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">Places travellers love most</h2>
           </div>
           <p className="max-w-sm text-sm text-muted-foreground">
             Curated cities and islands with vetted hotels, local guides and flexible itineraries.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {destinations.map((d) => (
             <article key={d.name} className="card-lift group relative overflow-hidden rounded-2xl">
               <img
@@ -303,7 +274,7 @@ function Index() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-brand">{d.country}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-sun">{d.country}</p>
                 <h3 className="mt-1 text-xl font-bold text-background">{d.name}</h3>
                 <p className="text-xs text-background/75">{d.tours} tours available</p>
               </div>
@@ -313,14 +284,14 @@ function Index() {
       </section>
 
       {/* Packages */}
-      <section id="packages" className="bg-secondary">
+      <section id="packages" className="topo">
         <div className="section-pad mx-auto max-w-7xl px-6">
           <div className="text-center">
-            <p className="eyebrow">Tour packages</p>
-            <h2 className="mt-2 text-3xl font-bold md:text-4xl">Trips ready when you are</h2>
+            <p className="eyebrow -rotate-2">Tour packages</p>
+            <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">Trips ready when you are</h2>
           </div>
 
-          <div className="mt-10 grid gap-7 md:grid-cols-3">
+          <div className="mt-12 grid gap-7 md:grid-cols-3">
             {packages.map((p) => (
               <article key={p.title} className="card-lift overflow-hidden rounded-2xl bg-card">
                 <div className="relative">
@@ -332,32 +303,32 @@ function Index() {
                     height={1000}
                     className="h-56 w-full object-cover"
                   />
-                  <span className="absolute left-4 top-4 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-primary-foreground">
+                  <span className="absolute left-4 top-4 rounded-md bg-coral px-3 py-1 text-xs font-semibold text-primary-foreground">
                     {p.days}
                   </span>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="size-3.5 text-brand" /> {p.place}
+                    <MapPin className="size-3.5 text-coral" /> {p.place}
                   </div>
                   <h3 className="mt-2 text-lg font-bold leading-snug">{p.title}</h3>
                   <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <Users className="size-3.5" /> {p.people}
+                      <User className="size-3.5" /> {p.people}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Star className="size-3.5 fill-brand text-brand" /> {p.rating}
+                      <Star className="size-3.5 fill-sun text-sun" /> {p.rating}
                     </span>
                   </div>
                   <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
                     <p className="text-sm text-muted-foreground">
-                      from <span className="text-xl font-bold text-ink">{p.price}</span>
+                      from <span className="text-xl font-extrabold text-ink">{p.price}</span>
                     </p>
                     <a
                       href="#contact"
-                      className="rounded-full bg-accent px-5 py-2.5 text-xs font-semibold text-accent-foreground transition-colors hover:bg-brand hover:text-primary-foreground"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral hover:gap-2.5 transition-all"
                     >
-                      Book Now
+                      Book now <ArrowRight className="size-4" />
                     </a>
                   </div>
                 </div>
@@ -369,32 +340,35 @@ function Index() {
 
       {/* About / why */}
       <section id="about" className="section-pad mx-auto max-w-7xl px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid items-center gap-14 lg:grid-cols-2">
           <div className="relative">
-            <img
-              src={about}
-              alt="Travellers at the airport gate"
-              loading="lazy"
-              width={1200}
-              height={900}
-              className="rounded-3xl object-cover"
-            />
-            <div className="absolute -bottom-6 -right-2 rounded-2xl bg-brand px-7 py-5 text-primary-foreground shadow-lg md:right-6">
+            <div className="pointer-events-none absolute -left-6 -top-6 size-24 rounded-full bg-sun" />
+            <div className="blob relative aspect-[4/3] w-full">
+              <img
+                src={about}
+                alt="Travellers at the airport gate"
+                loading="lazy"
+                width={1200}
+                height={900}
+                className="size-full object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-4 right-2 rounded-xl bg-coral px-7 py-5 text-primary-foreground shadow-lg">
               <p className="text-3xl font-extrabold">12+</p>
               <p className="text-xs font-medium opacity-90">years of guiding travellers</p>
             </div>
           </div>
           <div>
-            <p className="eyebrow">Why Arkan Travel</p>
-            <h2 className="mt-2 text-3xl font-bold md:text-4xl">Comfort and safety on every journey</h2>
-            <p className="mt-4 text-muted-foreground">
+            <p className="eyebrow -rotate-2">Why Arkan Travel</p>
+            <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">Comfort and safety on every journey</h2>
+            <p className="mt-5 text-muted-foreground">
               From the first enquiry to the flight home, one team handles your tickets, hotels, transfers and paperwork
               — so nothing is left to chance.
             </p>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            <div className="mt-9 grid gap-6 sm:grid-cols-2">
               {features.map((f) => (
                 <div key={f.title} className="flex gap-4">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
                     <f.icon className="size-5" />
                   </span>
                   <div>
@@ -418,7 +392,7 @@ function Index() {
             ["4.9", "Average rating"],
           ].map(([v, l]) => (
             <div key={l} className="text-center">
-              <p className="text-3xl font-extrabold text-brand md:text-4xl">{v}</p>
+              <p className="text-4xl font-extrabold text-sun">{v}</p>
               <p className="mt-1 text-sm text-background/70">{l}</p>
             </div>
           ))}
@@ -428,13 +402,13 @@ function Index() {
       {/* Testimonials */}
       <section className="section-pad mx-auto max-w-7xl px-6">
         <div className="text-center">
-          <p className="eyebrow">Testimonials</p>
-          <h2 className="mt-2 text-3xl font-bold md:text-4xl">What our travellers say</h2>
+          <p className="eyebrow -rotate-2">Testimonials</p>
+          <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">What our travellers say</h2>
         </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
           {testimonials.map((t) => (
-            <figure key={t.name} className="rounded-2xl border border-border bg-card p-7">
-              <Quote className="size-7 text-brand" />
+            <figure key={t.name} className="rounded-2xl bg-mint p-8">
+              <Quote className="size-7 text-coral" />
               <blockquote className="mt-4 text-sm leading-relaxed text-muted-foreground">"{t.text}"</blockquote>
               <figcaption className="mt-6">
                 <p className="text-sm font-bold">{t.name}</p>
@@ -447,34 +421,39 @@ function Index() {
 
       {/* CTA / contact */}
       <section id="contact" className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="rounded-3xl bg-brand px-8 py-14 text-center text-primary-foreground md:px-16">
-          <h2 className="text-3xl font-bold md:text-4xl">Ready to plan your next trip?</h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm opacity-90">
-            Tell us where you want to go and we'll come back with a full itinerary and price within 24 hours.
-          </p>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
-          >
-            <input
-              type="email"
-              required
-              placeholder="Your email address"
-              className="flex-1 rounded-full bg-background px-6 py-3.5 text-sm text-foreground outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-full bg-ink px-7 py-3.5 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+        <div className="relative overflow-hidden rounded-3xl bg-brand px-8 py-16 text-center text-primary-foreground md:px-16">
+          <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-sun/40" />
+          <div className="pointer-events-none absolute -bottom-14 -left-8 size-40 rounded-full bg-coral/40" />
+          <div className="relative">
+            <p className="script text-primary-foreground">Let's go</p>
+            <h2 className="mt-2 text-4xl font-extrabold md:text-5xl">Ready to plan your next trip?</h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm opacity-90">
+              Tell us where you want to go and we'll come back with a full itinerary and price within 24 hours.
+            </p>
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
             >
-              Request a quote
-            </button>
-          </form>
+              <input
+                type="email"
+                required
+                placeholder="Your email address"
+                className="flex-1 rounded-md bg-background px-6 py-4 text-sm text-foreground outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-md bg-coral px-8 py-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark"
+              >
+                Request a quote
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-secondary">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-4">
+      <footer className="topo">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-4">
           <div>
             <img src={logo.url} alt="Arkan Travel logo" loading="lazy" width={160} height={160} className="h-16 w-auto" />
             <p className="mt-4 text-sm text-muted-foreground">
@@ -486,7 +465,7 @@ function Index() {
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {navLinks.map((l) => (
                 <li key={l.label}>
-                  <a href={l.href} className="hover:text-brand-dark">
+                  <a href={l.href} className="hover:text-coral">
                     {l.label}
                   </a>
                 </li>
@@ -506,13 +485,13 @@ function Index() {
             <h3 className="text-sm font-bold">Contact</h3>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
-                <Phone className="size-4 text-brand" /> +90 000 000 00 00
+                <Phone className="size-4 text-coral" /> +90 000 000 00 00
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="size-4 text-brand" /> info@arkantravel.com
+                <Mail className="size-4 text-coral" /> info@arkantravel.com
               </li>
               <li className="flex items-center gap-2">
-                <MapPin className="size-4 text-brand" /> Istanbul, Türkiye
+                <MapPin className="size-4 text-coral" /> Istanbul, Türkiye
               </li>
             </ul>
           </div>
@@ -529,23 +508,21 @@ function Field({
   icon: Icon,
   label,
   placeholder,
-  className = "",
 }: {
   icon: React.ElementType;
   label: string;
   placeholder: string;
-  className?: string;
 }) {
   return (
-    <label className={`block rounded-xl border border-border px-4 py-3 ${className}`}>
-      <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-      <span className="mt-1 flex items-center gap-2">
-        <Icon className="size-4 text-brand" />
-        <input
-          placeholder={placeholder}
-          className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/70"
-        />
+    <label className="block">
+      <span className="flex items-center gap-2 text-sm font-bold text-ink">
+        <Icon className="size-4 text-coral" />
+        {label}
       </span>
+      <input
+        placeholder={placeholder}
+        className="mt-3 h-8 w-full border-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+      />
     </label>
   );
 }
