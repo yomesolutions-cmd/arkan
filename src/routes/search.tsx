@@ -125,8 +125,15 @@ function SearchPage() {
     onSuccess: (row) => setBooked(row.id),
   });
 
-  function setParam(patch: Partial<SearchParams>) {
-    navigate({ to: "/search", search: (prev) => ({ ...prev, ...patch }) });
+  function setParam(patch: Partial<Record<keyof SearchParams, string | number | undefined>>) {
+    navigate({
+      to: "/search",
+      search: (prev: SearchParams) => {
+        const next: Record<string, unknown> = { ...prev, ...patch };
+        for (const k of Object.keys(next)) if (next[k] === undefined || next[k] === "") delete next[k];
+        return next as SearchParams;
+      },
+    });
   }
 
   const tabs: { key: SearchType; label: string; icon: typeof Plane }[] = [
