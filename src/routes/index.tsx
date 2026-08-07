@@ -308,7 +308,7 @@ function Index() {
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <p className="text-xs font-semibold uppercase tracking-widest text-sun">{d.country}</p>
                 <h3 className="mt-1 text-xl font-bold text-background">{d.name}</h3>
-                <p className="text-xs text-background/75">{d.tour_count} tours available</p>
+                <p className="text-xs text-background/75">{d.region} · explore tours</p>
               </div>
             </Link>
           ))}
