@@ -1,5 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { getHomeContent } from "@/lib/catalog.functions";
+import { imageFor } from "@/lib/images";
+import { supabase } from "@/integrations/supabase/client";
 import {
   MapPin,
   Flag,
@@ -30,7 +34,20 @@ import dest3 from "@/assets/dest-3.jpg";
 import dest4 from "@/assets/dest-4.jpg";
 import about from "@/assets/about.jpg";
 
+const homeQuery = queryOptions({
+  queryKey: ["home"],
+  queryFn: () => getHomeContent(),
+});
+
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => {
+    void context.queryClient.ensureQueryData(homeQuery);
+  },
+  errorComponent: () => (
+    <div className="p-16 text-center text-sm text-muted-foreground">
+      Could not load content right now. Please refresh.
+    </div>
+  ),
   head: () => ({
     meta: [
       { title: "Arkan Travel — Discover the Most Engaging Places" },
@@ -56,43 +73,6 @@ const navLinks = [
   { label: "Destinations", href: "#destinations" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
-];
-
-const destinations = [
-  { name: "Istanbul", country: "Türkiye", tours: 24, img: dest1 },
-  { name: "Dubai", country: "UAE", tours: 18, img: dest2 },
-  { name: "Maldives", country: "Indian Ocean", tours: 12, img: dest3 },
-  { name: "Paris", country: "France", tours: 16, img: dest4 },
-];
-
-const packages = [
-  {
-    title: "Bosphorus & Cappadocia Escape",
-    place: "Türkiye",
-    days: "6 days / 5 nights",
-    people: "2-12 people",
-    price: "$740",
-    rating: "4.9",
-    img: dest1,
-  },
-  {
-    title: "Dubai City Lights & Desert",
-    place: "United Arab Emirates",
-    days: "5 days / 4 nights",
-    people: "2-10 people",
-    price: "$890",
-    rating: "4.8",
-    img: dest2,
-  },
-  {
-    title: "Maldives Overwater Retreat",
-    place: "Maldives",
-    days: "7 days / 6 nights",
-    people: "2 people",
-    price: "$1,650",
-    rating: "5.0",
-    img: dest3,
-  },
 ];
 
 const features = [
@@ -122,6 +102,36 @@ const testimonials = [
 
 function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const navigate = useNavigate();
+  const { data } = useSuspenseQuery(homeQuery);
+  const destinations = data.destinations;
+  const packages = data.tours;
+
+  const [dest, setDest] = useState("");
+  const [activity, setActivity] = useState("");
+  const [date, setDate] = useState("");
+  const [guests, setGuests] = useState("2");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: u }) => setSignedIn(Boolean(u.user)));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setSignedIn(Boolean(session)));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  function submitSearch() {
+    navigate({
+      to: "/search",
+      search: {
+        type: "tours" as const,
+        sort: "price_asc" as const,
+        ...(dest.trim() ? { q: dest.trim() } : {}),
+        ...(activity.trim() ? { category: activity.trim() } : {}),
+        ...(date ? { date } : {}),
+        ...(Number(guests) > 0 ? { guests: Number(guests) } : {}),
+      },
+    });
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground" id="home">
@@ -165,15 +175,31 @@ function Index() {
             ))}
           </nav>
           <div className="flex items-center gap-5">
-            <a href="#contact" className="hidden text-[0.95rem] font-medium text-ink hover:text-coral md:inline">
-              Login
-            </a>
-            <a
-              href="#contact"
-              className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
-            >
-              Sign Up
-            </a>
+            {signedIn ? (
+              <Link
+                to="/dashboard"
+                className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
+              >
+                My bookings
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  search={{ redirect: "/dashboard" }}
+                  className="hidden text-[0.95rem] font-medium text-ink hover:text-coral md:inline"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/auth"
+                  search={{ redirect: "/dashboard" }}
+                  className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
             <button
               aria-label="Toggle menu"
               onClick={() => setMenuOpen((v) => !v)}
@@ -234,12 +260,13 @@ function Index() {
         <div className="relative z-10 mx-auto -mt-16 max-w-5xl px-6 pb-24">
           <div className="rounded-xl bg-card p-6 shadow-[0_30px_70px_-45px_var(--ink)] md:p-7">
             <div className="grid gap-6 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
-              <Field icon={MapPin} label="Destination" placeholder="Where are you going?" />
-              <Field icon={Flag} label="Activity" placeholder="Activity" />
-              <Field icon={CalendarDays} label="Dates" placeholder="12 Aug 2026" />
-              <Field icon={User} label="Guest" placeholder="2 adults" />
+              <Field icon={MapPin} label="Destination" placeholder="Where are you going?" value={dest} onChange={setDest} />
+              <Field icon={Flag} label="Activity" placeholder="City, Beach, Culture…" value={activity} onChange={setActivity} />
+              <Field icon={CalendarDays} label="Dates" placeholder="" type="date" value={date} onChange={setDate} />
+              <Field icon={User} label="Guest" placeholder="2" type="number" value={guests} onChange={setGuests} />
               <button
                 aria-label="Search"
+                onClick={submitSearch}
                 className="mt-auto flex h-14 items-center justify-center rounded-md bg-coral px-7 text-primary-foreground transition-colors hover:bg-coral-dark"
               >
                 <Search className="size-5" />
@@ -263,9 +290,14 @@ function Index() {
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {destinations.map((d) => (
-            <article key={d.name} className="card-lift group relative overflow-hidden rounded-2xl">
+            <Link
+              to="/search"
+              search={{ type: "tours" as const, sort: "price_asc" as const, q: d.name }}
+              key={d.id}
+              className="card-lift group relative block overflow-hidden rounded-2xl"
+            >
               <img
-                src={d.img}
+                src={imageFor(d.image_key)}
                 alt={`${d.name}, ${d.country}`}
                 loading="lazy"
                 width={800}
@@ -276,9 +308,9 @@ function Index() {
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <p className="text-xs font-semibold uppercase tracking-widest text-sun">{d.country}</p>
                 <h3 className="mt-1 text-xl font-bold text-background">{d.name}</h3>
-                <p className="text-xs text-background/75">{d.tours} tours available</p>
+                <p className="text-xs text-background/75">{d.tour_count} tours available</p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>
@@ -293,10 +325,10 @@ function Index() {
 
           <div className="mt-12 grid gap-7 md:grid-cols-3">
             {packages.map((p) => (
-              <article key={p.title} className="card-lift overflow-hidden rounded-2xl bg-card">
+              <article key={p.id} className="card-lift overflow-hidden rounded-2xl bg-card">
                 <div className="relative">
                   <img
-                    src={p.img}
+                    src={imageFor(p.image_key)}
                     alt={p.title}
                     loading="lazy"
                     width={800}
@@ -304,7 +336,7 @@ function Index() {
                     className="h-56 w-full object-cover"
                   />
                   <span className="absolute left-4 top-4 rounded-md bg-coral px-3 py-1 text-xs font-semibold text-primary-foreground">
-                    {p.days}
+                    {p.days} days / {p.nights} nights
                   </span>
                 </div>
                 <div className="p-6">
@@ -314,7 +346,7 @@ function Index() {
                   <h3 className="mt-2 text-lg font-bold leading-snug">{p.title}</h3>
                   <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <User className="size-3.5" /> {p.people}
+                      <User className="size-3.5" /> {p.min_people}-{p.max_people} people
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Star className="size-3.5 fill-sun text-sun" /> {p.rating}
@@ -322,14 +354,15 @@ function Index() {
                   </div>
                   <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
                     <p className="text-sm text-muted-foreground">
-                      from <span className="text-xl font-extrabold text-ink">{p.price}</span>
+                      from <span className="text-xl font-extrabold text-ink">${Number(p.price).toLocaleString()}</span>
                     </p>
-                    <a
-                      href="#contact"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral hover:gap-2.5 transition-all"
+                    <Link
+                      to="/search"
+                      search={{ type: "tours" as const, sort: "price_asc" as const, q: p.place }}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral transition-all hover:gap-2.5"
                     >
                       Book now <ArrowRight className="size-4" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </article>
@@ -508,10 +541,16 @@ function Field({
   icon: Icon,
   label,
   placeholder,
+  value,
+  onChange,
+  type = "text",
 }: {
   icon: React.ElementType;
   label: string;
   placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
 }) {
   return (
     <label className="block">
@@ -520,6 +559,9 @@ function Field({
         {label}
       </span>
       <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="mt-3 h-8 w-full border-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
       />
