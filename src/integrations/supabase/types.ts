@@ -14,7 +14,263 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          created_at: string
+          guests: number
+          id: string
+          item_id: string | null
+          item_type: Database["public"]["Enums"]["booking_item_type"]
+          notes: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          subtitle: string | null
+          title: string
+          total_price: number
+          travel_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guests?: number
+          id?: string
+          item_id?: string | null
+          item_type: Database["public"]["Enums"]["booking_item_type"]
+          notes?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          subtitle?: string | null
+          title: string
+          total_price?: number
+          travel_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guests?: number
+          id?: string
+          item_id?: string | null
+          item_type?: Database["public"]["Enums"]["booking_item_type"]
+          notes?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          subtitle?: string | null
+          title?: string
+          total_price?: number
+          travel_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      destinations: {
+        Row: {
+          country: string
+          created_at: string
+          description: string | null
+          featured: boolean
+          id: string
+          image_key: string
+          name: string
+          region: string
+          slug: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean
+          id?: string
+          image_key?: string
+          name: string
+          region?: string
+          slug: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean
+          id?: string
+          image_key?: string
+          name?: string
+          region?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      flights: {
+        Row: {
+          airline: string
+          arrive_at: string
+          cabin: string
+          created_at: string
+          depart_at: string
+          flight_no: string
+          from_city: string
+          id: string
+          price: number
+          stops: number
+          to_city: string
+        }
+        Insert: {
+          airline: string
+          arrive_at: string
+          cabin?: string
+          created_at?: string
+          depart_at: string
+          flight_no: string
+          from_city: string
+          id?: string
+          price: number
+          stops?: number
+          to_city: string
+        }
+        Update: {
+          airline?: string
+          arrive_at?: string
+          cabin?: string
+          created_at?: string
+          depart_at?: string
+          flight_no?: string
+          from_city?: string
+          id?: string
+          price?: number
+          stops?: number
+          to_city?: string
+        }
+        Relationships: []
+      }
+      hotels: {
+        Row: {
+          amenities: string[]
+          city: string
+          country: string
+          created_at: string
+          id: string
+          image_key: string
+          name: string
+          price_per_night: number
+          rating: number
+          stars: number
+        }
+        Insert: {
+          amenities?: string[]
+          city: string
+          country: string
+          created_at?: string
+          id?: string
+          image_key?: string
+          name: string
+          price_per_night: number
+          rating?: number
+          stars?: number
+        }
+        Update: {
+          amenities?: string[]
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          image_key?: string
+          name?: string
+          price_per_night?: number
+          rating?: number
+          stars?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tour_packages: {
+        Row: {
+          category: string
+          created_at: string
+          days: number
+          description: string | null
+          destination_id: string | null
+          featured: boolean
+          id: string
+          image_key: string
+          max_people: number
+          min_people: number
+          nights: number
+          place: string
+          price: number
+          rating: number
+          slug: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          days?: number
+          description?: string | null
+          destination_id?: string | null
+          featured?: boolean
+          id?: string
+          image_key?: string
+          max_people?: number
+          min_people?: number
+          nights?: number
+          place: string
+          price: number
+          rating?: number
+          slug: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          days?: number
+          description?: string | null
+          destination_id?: string | null
+          featured?: boolean
+          id?: string
+          image_key?: string
+          max_people?: number
+          min_people?: number
+          nights?: number
+          place?: string
+          price?: number
+          rating?: number
+          slug?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_packages_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +279,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_item_type: "flight" | "hotel" | "tour"
+      booking_status: "pending" | "confirmed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +407,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_item_type: ["flight", "hotel", "tour"],
+      booking_status: ["pending", "confirmed", "cancelled"],
+    },
   },
 } as const
