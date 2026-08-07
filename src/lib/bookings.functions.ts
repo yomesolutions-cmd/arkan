@@ -61,11 +61,16 @@ export const updateBooking = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { id } = data;
-    const patch: Record<string, unknown> = {};
-    if (data.status !== undefined) patch["status"] = data.status;
-    if (data.travel_date !== undefined) patch["travel_date"] = data.travel_date;
-    if (data.guests !== undefined) patch["guests"] = data.guests;
-    if (data.notes !== undefined) patch["notes"] = data.notes;
+    const patch: {
+      status?: "pending" | "confirmed" | "cancelled";
+      travel_date?: string | null;
+      guests?: number;
+      notes?: string | null;
+    } = {};
+    if (data.status !== undefined) patch.status = data.status;
+    if (data.travel_date !== undefined) patch.travel_date = data.travel_date;
+    if (data.guests !== undefined) patch.guests = data.guests;
+    if (data.notes !== undefined) patch.notes = data.notes;
     const { data: row, error } = await context.supabase
       .from("bookings")
       .update(patch)
