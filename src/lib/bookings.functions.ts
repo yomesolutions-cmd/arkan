@@ -60,7 +60,12 @@ export const updateBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { id, ...patch } = data;
+    const { id } = data;
+    const patch: Record<string, unknown> = {};
+    if (data.status !== undefined) patch["status"] = data.status;
+    if (data.travel_date !== undefined) patch["travel_date"] = data.travel_date;
+    if (data.guests !== undefined) patch["guests"] = data.guests;
+    if (data.notes !== undefined) patch["notes"] = data.notes;
     const { data: row, error } = await context.supabase
       .from("bookings")
       .update(patch)
