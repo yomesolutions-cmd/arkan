@@ -131,7 +131,7 @@ function SearchPage() {
       search: (prev: SearchParams) => {
         const next: Record<string, unknown> = { ...prev, ...patch };
         for (const k of Object.keys(next)) if (next[k] === undefined || next[k] === "") delete next[k];
-        return next as SearchParams;
+        return next as unknown as SearchParams;
       },
     });
   }
