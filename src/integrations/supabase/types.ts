@@ -206,6 +206,47 @@ export type Database = {
         }
         Relationships: []
       }
+      question_nodes: {
+        Row: {
+          answer: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          parent_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          parent_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          parent_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_nodes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "question_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tour_packages: {
         Row: {
           category: string
@@ -271,14 +312,42 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "user"
       booking_item_type: "flight" | "hotel" | "tour"
       booking_status: "pending" | "confirmed" | "cancelled"
     }
@@ -408,6 +477,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user"],
       booking_item_type: ["flight", "hotel", "tour"],
       booking_status: ["pending", "confirmed", "cancelled"],
     },

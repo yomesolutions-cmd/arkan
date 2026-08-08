@@ -1,0 +1,144 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { MessageCircle, X, ChevronLeft, RotateCcw } from "lucide-react";
+import { listPublicQuestions, type QuestionNode } from "@/lib/questions.functions";
+import logo from "@/assets/arkan-logo.png.asset.json";
+
+type Bubble = { id: string; from: "bot" | "user"; text: string };
+
+export function ChatBox() {
+  const [open, setOpen] = useState(false);
+  const fetchTree = useServerFn(listPublicQuestions);
+  const { data: nodes = [], isLoading } = useQuery({
+    queryKey: ["question-tree"],
+    queryFn: () => fetchTree(),
+    enabled: open,
+  });
+
+  const [path, setPath] = useState<QuestionNode[]>([]);
+  const [log, setLog] = useState<Bubble[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const byParent = useMemo(() => {
+    const map = new Map<string | null, QuestionNode[]>();
+    for (const n of nodes) {
+      const key = n.parent_id;
+      const arr = map.get(key) ?? [];
+      arr.push(n);
+      map.set(key, arr);
+    }
+    for (const arr of map.values()) arr.sort((a, b) => a.sort_order - b.sort_order);
+    return map;
+  }, [nodes]);
+
+  const current = path.length ? path[path.length - 1]! : null;
+  const options = byParent.get(current ? current.id : null) ?? [];
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [log, options.length, open]);
+
+  function choose(node: QuestionNode) {
+    setLog((l) => [
+      ...l,
+      { id: `${node.id}-u-${l.length}`, from: "user", text: node.label },
+      ...(node.answer ? [{ id: `${node.id}-b-${l.length}`, from: "bot" as const, text: node.answer }] : []),
+    ]);
+    setPath((p) => [...p, node]);
+  }
+
+  function back() {
+    setPath((p) => p.slice(0, -1));
+  }
+
+  function restart() {
+    setPath([]);
+    setLog([]);
+  }
+
+  return (
+    <>
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open help chat"
+          className="fixed bottom-6 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-coral text-primary-foreground shadow-xl transition-transform hover:scale-105 hover:bg-coral-dark"
+        >
+          <MessageCircle className="size-6" />
+        </button>
+      )}
+
+      {open && (
+        <div className="fixed bottom-6 right-6 z-50 flex h-[32rem] w-[min(22rem,calc(100vw-3rem))] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
+          <header className="flex items-center gap-3 bg-mint px-4 py-3">
+            <img src={logo.url} alt="Arkan Travel" className="h-9 w-auto" width={80} height={80} />
+            <div className="flex-1">
+              <p className="text-sm font-extrabold text-ink">Travel help</p>
+              <p className="text-[0.7rem] text-muted-foreground">Pick a topic to get answers</p>
+            </div>
+            <button onClick={() => setOpen(false)} aria-label="Close chat" className="rounded-full p-1.5 hover:bg-background/60">
+              <X className="size-4 text-ink" />
+            </button>
+          </header>
+
+          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            <p className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-ink">
+              Hi! 👋 What can we help you with today?
+            </p>
+            {log.map((b) => (
+              <p
+                key={b.id}
+                className={
+                  b.from === "user"
+                    ? "ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-coral px-3 py-2 text-sm font-medium text-primary-foreground"
+                    : "max-w-[85%] rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm text-ink"
+                }
+              >
+                {b.text}
+              </p>
+            ))}
+
+            {isLoading && <p className="text-xs text-muted-foreground">Loading topics…</p>}
+
+            {!isLoading && options.length > 0 && (
+              <div className="flex flex-col items-start gap-2 pt-1">
+                {options.map((o) => (
+                  <button
+                    key={o.id}
+                    onClick={() => choose(o)}
+                    className="rounded-full border border-coral/40 bg-background px-3 py-2 text-left text-xs font-semibold text-ink transition-colors hover:bg-coral hover:text-primary-foreground"
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {!isLoading && options.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                That's everything on this topic. Go back or start over to explore more.
+              </p>
+            )}
+          </div>
+
+          <footer className="flex items-center gap-2 border-t border-border px-3 py-2">
+            <button
+              onClick={back}
+              disabled={path.length === 0}
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-40 hover:bg-muted"
+            >
+              <ChevronLeft className="size-3.5" /> Back
+            </button>
+            <button
+              onClick={restart}
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink hover:bg-muted"
+            >
+              <RotateCcw className="size-3.5" /> Start over
+            </button>
+          </footer>
+        </div>
+      )}
+    </>
+  );
+}

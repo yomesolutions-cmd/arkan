@@ -55,7 +55,7 @@ function Dashboard() {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", search: {}, replace: true });
   }
 
   const visible = bookings.filter((b) => filter === "all" || b.status === filter);
@@ -74,6 +74,9 @@ function Dashboard() {
           <div className="flex items-center gap-4 text-sm">
             <Link to="/search" search={{ type: "tours" }} className="font-medium text-ink hover:text-coral">
               Search trips
+            </Link>
+            <Link to="/admin" className="font-medium text-ink hover:text-coral">
+              Admin
             </Link>
             <span className="hidden text-muted-foreground sm:inline">{email}</span>
             <button onClick={signOut} className="rounded-md border border-border px-4 py-2 font-semibold hover:bg-muted">
