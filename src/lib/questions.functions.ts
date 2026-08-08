@@ -102,11 +102,16 @@ export const updateQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
-    if (data.label !== undefined) patch["label"] = data.label;
-    if (data.answer !== undefined) patch["answer"] = data.answer || null;
-    if (data.sort_order !== undefined) patch["sort_order"] = data.sort_order;
-    if (data.is_active !== undefined) patch["is_active"] = data.is_active;
+    const patch: {
+      label?: string;
+      answer?: string | null;
+      sort_order?: number;
+      is_active?: boolean;
+    } = {};
+    if (data.label !== undefined) patch.label = data.label;
+    if (data.answer !== undefined) patch.answer = data.answer || null;
+    if (data.sort_order !== undefined) patch.sort_order = data.sort_order;
+    if (data.is_active !== undefined) patch.is_active = data.is_active;
     const { data: row, error } = await context.supabase
       .from("question_nodes")
       .update(patch)
