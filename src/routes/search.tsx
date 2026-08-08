@@ -128,7 +128,7 @@ function SearchPage() {
   function setParam(patch: Partial<Record<keyof SearchParams, string | number | undefined>>) {
     navigate({
       to: "/search",
-      search: (prev: SearchParams) => {
+      search: (prev: Record<string, unknown>) => {
         const next: Record<string, unknown> = { ...prev, ...patch };
         for (const k of Object.keys(next)) if (next[k] === undefined || next[k] === "") delete next[k];
         return next as unknown as SearchParams;
