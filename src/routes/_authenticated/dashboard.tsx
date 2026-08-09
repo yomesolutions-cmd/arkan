@@ -55,7 +55,7 @@ function Dashboard() {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", search: {}, replace: true });
+    navigate({ to: "/auth", search: { redirect: "/dashboard" }, replace: true });
   }
 
   const visible = bookings.filter((b) => filter === "all" || b.status === filter);
