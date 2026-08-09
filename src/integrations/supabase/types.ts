@@ -62,37 +62,76 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_logs: {
+        Row: {
+          created_at: string
+          depth: number
+          id: string
+          locale: string
+          node_id: string | null
+          node_label: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          depth?: number
+          id?: string
+          locale?: string
+          node_id?: string | null
+          node_label: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          depth?: number
+          id?: string
+          locale?: string
+          node_id?: string | null
+          node_label?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       destinations: {
         Row: {
           country: string
+          country_ar: string
           created_at: string
           description: string | null
+          description_ar: string | null
           featured: boolean
           id: string
           image_key: string
           name: string
+          name_ar: string
           region: string
           slug: string
         }
         Insert: {
           country: string
+          country_ar?: string
           created_at?: string
           description?: string | null
+          description_ar?: string | null
           featured?: boolean
           id?: string
           image_key?: string
           name: string
+          name_ar?: string
           region?: string
           slug: string
         }
         Update: {
           country?: string
+          country_ar?: string
           created_at?: string
           description?: string | null
+          description_ar?: string | null
           featured?: boolean
           id?: string
           image_key?: string
           name?: string
+          name_ar?: string
           region?: string
           slug?: string
         }
@@ -101,42 +140,51 @@ export type Database = {
       flights: {
         Row: {
           airline: string
+          airline_ar: string
           arrive_at: string
           cabin: string
           created_at: string
           depart_at: string
           flight_no: string
           from_city: string
+          from_city_ar: string
           id: string
           price: number
           stops: number
           to_city: string
+          to_city_ar: string
         }
         Insert: {
           airline: string
+          airline_ar?: string
           arrive_at: string
           cabin?: string
           created_at?: string
           depart_at: string
           flight_no: string
           from_city: string
+          from_city_ar?: string
           id?: string
           price: number
           stops?: number
           to_city: string
+          to_city_ar?: string
         }
         Update: {
           airline?: string
+          airline_ar?: string
           arrive_at?: string
           cabin?: string
           created_at?: string
           depart_at?: string
           flight_no?: string
           from_city?: string
+          from_city_ar?: string
           id?: string
           price?: number
           stops?: number
           to_city?: string
+          to_city_ar?: string
         }
         Relationships: []
       }
@@ -144,11 +192,13 @@ export type Database = {
         Row: {
           amenities: string[]
           city: string
+          city_ar: string
           country: string
           created_at: string
           id: string
           image_key: string
           name: string
+          name_ar: string
           price_per_night: number
           rating: number
           stars: number
@@ -156,11 +206,13 @@ export type Database = {
         Insert: {
           amenities?: string[]
           city: string
+          city_ar?: string
           country: string
           created_at?: string
           id?: string
           image_key?: string
           name: string
+          name_ar?: string
           price_per_night: number
           rating?: number
           stars?: number
@@ -168,11 +220,13 @@ export type Database = {
         Update: {
           amenities?: string[]
           city?: string
+          city_ar?: string
           country?: string
           created_at?: string
           id?: string
           image_key?: string
           name?: string
+          name_ar?: string
           price_per_night?: number
           rating?: number
           stars?: number
@@ -209,30 +263,36 @@ export type Database = {
       question_nodes: {
         Row: {
           answer: string | null
+          answer_ar: string | null
           created_at: string
           id: string
           is_active: boolean
           label: string
+          label_ar: string
           parent_id: string | null
           sort_order: number
           updated_at: string
         }
         Insert: {
           answer?: string | null
+          answer_ar?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           label: string
+          label_ar?: string
           parent_id?: string | null
           sort_order?: number
           updated_at?: string
         }
         Update: {
           answer?: string | null
+          answer_ar?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           label?: string
+          label_ar?: string
           parent_id?: string | null
           sort_order?: number
           updated_at?: string
@@ -247,12 +307,106 @@ export type Database = {
           },
         ]
       }
+      site_content: {
+        Row: {
+          created_at: string
+          data_ar: Json
+          data_en: Json
+          id: string
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_ar?: Json
+          data_en?: Json
+          id?: string
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_ar?: Json
+          data_en?: Json
+          id?: string
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          locale: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          locale?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          locale?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name_ar: string
+          name_en: string
+          quote_ar: string
+          quote_en: string
+          rating: number
+          role_ar: string
+          role_en: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          name_en: string
+          quote_ar?: string
+          quote_en: string
+          rating?: number
+          role_ar?: string
+          role_en?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          name_en?: string
+          quote_ar?: string
+          quote_en?: string
+          rating?: number
+          role_ar?: string
+          role_en?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tour_packages: {
         Row: {
           category: string
           created_at: string
           days: number
           description: string | null
+          description_ar: string | null
           destination_id: string | null
           featured: boolean
           id: string
@@ -261,16 +415,19 @@ export type Database = {
           min_people: number
           nights: number
           place: string
+          place_ar: string
           price: number
           rating: number
           slug: string
           title: string
+          title_ar: string
         }
         Insert: {
           category?: string
           created_at?: string
           days?: number
           description?: string | null
+          description_ar?: string | null
           destination_id?: string | null
           featured?: boolean
           id?: string
@@ -279,16 +436,19 @@ export type Database = {
           min_people?: number
           nights?: number
           place: string
+          place_ar?: string
           price: number
           rating?: number
           slug: string
           title: string
+          title_ar?: string
         }
         Update: {
           category?: string
           created_at?: string
           days?: number
           description?: string | null
+          description_ar?: string | null
           destination_id?: string | null
           featured?: boolean
           id?: string
@@ -297,10 +457,12 @@ export type Database = {
           min_people?: number
           nights?: number
           place?: string
+          place_ar?: string
           price?: number
           rating?: number
           slug?: string
           title?: string
+          title_ar?: string
         }
         Relationships: [
           {
