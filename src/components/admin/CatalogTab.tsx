@@ -131,7 +131,7 @@ export function CatalogTab() {
   const [entity, setEntity] = useState<EntityKey>("tours");
   const [creating, setCreating] = useState(false);
   const cfg = ENTITIES[entity];
-  const rows = ((data?.[entity] ?? []) as unknown as Row[]) ?? [];
+  const rows = (data?.[entity] ?? []) as unknown as Row[];
 
   return (
     <div className="space-y-4">
