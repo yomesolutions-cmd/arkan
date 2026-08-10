@@ -68,7 +68,7 @@ function AdminPage() {
             onClick={() => navigate({ to: "/dashboard" })}
             className="mt-6 rounded-md bg-coral px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-coral-dark"
           >
-            {t("nav.dashboard")}
+            {t("dash.title")}
           </button>
         </div>
       </div>
@@ -85,7 +85,7 @@ function AdminPage() {
           <div className="flex items-center gap-3">
             <LanguageToggle />
             <Link to="/dashboard" className="text-sm font-semibold text-ink hover:text-coral">
-              {t("nav.dashboard")}
+              {t("dash.title")}
             </Link>
           </div>
         </div>
