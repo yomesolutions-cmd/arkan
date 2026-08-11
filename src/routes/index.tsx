@@ -181,12 +181,17 @@ function Index() {
           <div className="flex items-center gap-4">
             <LanguageToggle />
             {signedIn ? (
-              <Link
-                to="/dashboard"
-                className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
-              >
-                {t("nav.myBookings")}
-              </Link>
+              <>
+                <Link to="/amin" className="hidden text-[0.95rem] font-medium text-ink hover:text-coral md:inline">
+                  {t("nav.admin")}
+                </Link>
+                <Link
+                  to="/dashboard"
+                  className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
+                >
+                  {t("nav.myBookings")}
+                </Link>
+              </>
             ) : (
               <>
                 <Link
@@ -226,6 +231,15 @@ function Index() {
                 {t(l.key)}
               </a>
             ))}
+            {signedIn && (
+              <Link
+                to="/amin"
+                onClick={() => setMenuOpen(false)}
+                className="block py-2.5 text-sm font-semibold text-ink"
+              >
+                {t("nav.admin")}
+              </Link>
+            )}
           </nav>
         )}
       </header>
