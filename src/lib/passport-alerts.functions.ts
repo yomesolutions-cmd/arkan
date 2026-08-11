@@ -70,65 +70,131 @@ function asText(value: unknown, max = 160) {
   return typeof value === "string" && value.trim() ? value.trim().slice(0, max) : null;
 }
 
+function normalizeInfo(parsed: Partial<ExtractedPassportInfo>) {
+  return {
+    traveler_name: asText(parsed.traveler_name),
+    passport_number: asText(parsed.passport_number, 80),
+    passport_country: asText(parsed.passport_country, 120),
+    expires_on: normalizeDate(parsed.expires_on),
+    confidence:
+      parsed.confidence === "high" || parsed.confidence === "medium" || parsed.confidence === "low"
+        ? parsed.confidence
+        : "low",
+  } satisfies ExtractedPassportInfo;
+}
+
+function splitDataUrl(dataUrl: string) {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!match) throw new Error("Invalid image data.");
+  return { mimeType: match[1], base64: match[2] };
+}
+
+const passportPrompt =
+  "Extract visible passport details for an admin form. Return only JSON with traveler_name, passport_number, passport_country, expires_on as YYYY-MM-DD, and confidence as low, medium, or high. Use null for anything unreadable.";
+
+async function extractWithOpenAI(imageDataUrl: string, key: string) {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env["OPENAI_PASSPORT_MODEL"] || "gpt-4.1-mini",
+      input: [
+        {
+          role: "user",
+          content: [
+            { type: "input_text", text: passportPrompt },
+            { type: "input_image", image_url: imageDataUrl },
+          ],
+        },
+      ],
+      max_output_tokens: 400,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`OpenAI extraction failed: ${body.slice(0, 300)}`);
+  }
+
+  const result = await response.json();
+  const outputText =
+    result.output_text ??
+    result.output?.flatMap((item: { content?: { text?: string }[] }) => item.content ?? [])
+      .map((content: { text?: string }) => content.text)
+      .filter(Boolean)
+      .join("\n") ??
+    "";
+  return normalizeInfo(parseJsonObject(outputText));
+}
+
+async function extractWithGemini(imageDataUrl: string, key: string) {
+  const { mimeType, base64 } = splitDataUrl(imageDataUrl);
+  const model = process.env["GEMINI_PASSPORT_MODEL"] || "gemini-3.6-flash";
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": key,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { inline_data: { mime_type: mimeType, data: base64 } },
+            { text: passportPrompt },
+          ],
+        },
+      ],
+      generationConfig: { responseMimeType: "application/json" },
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Gemini extraction failed: ${body.slice(0, 300)}`);
+  }
+
+  const result = await response.json();
+  const outputText =
+    result.candidates?.flatMap((candidate: { content?: { parts?: { text?: string }[] } }) => candidate.content?.parts ?? [])
+      .map((part: { text?: string }) => part.text)
+      .filter(Boolean)
+      .join("\n") ?? "";
+  return normalizeInfo(parseJsonObject(outputText));
+}
+
 export const extractPassportInfoFromImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => extractInput.parse(input))
   .handler(async ({ data }) => {
-    const key = process.env["OPENAI_API_KEY"];
-    if (!key) {
-      throw new Error("OPENAI_API_KEY is not configured for passport image extraction.");
+    const openAIKey = process.env["OPENAI_API_KEY"];
+    const geminiKey = process.env["GEMINI_API_KEY"];
+    const failures: string[] = [];
+
+    if (openAIKey) {
+      try {
+        return await extractWithOpenAI(data.image_data_url, openAIKey);
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : "OpenAI extraction failed.");
+      }
+    } else {
+      failures.push("OPENAI_API_KEY is not configured.");
     }
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: process.env["OPENAI_PASSPORT_MODEL"] || "gpt-4.1-mini",
-        input: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_text",
-                text:
-                  "Extract visible passport details for an admin form. Return only JSON with traveler_name, passport_number, passport_country, expires_on as YYYY-MM-DD, and confidence as low, medium, or high. Use null for anything unreadable.",
-              },
-              { type: "input_image", image_url: data.image_data_url },
-            ],
-          },
-        ],
-        max_output_tokens: 400,
-      }),
-    });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Passport extraction failed: ${body.slice(0, 300)}`);
+    if (geminiKey) {
+      try {
+        return await extractWithGemini(data.image_data_url, geminiKey);
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : "Gemini extraction failed.");
+      }
+    } else {
+      failures.push("GEMINI_API_KEY is not configured.");
     }
 
-    const result = await response.json();
-    const outputText =
-      result.output_text ??
-      result.output?.flatMap((item: { content?: { text?: string }[] }) => item.content ?? [])
-        .map((content: { text?: string }) => content.text)
-        .filter(Boolean)
-        .join("\n") ??
-      "";
-    const parsed = parseJsonObject(outputText);
-
-    return {
-      traveler_name: asText(parsed.traveler_name),
-      passport_number: asText(parsed.passport_number, 80),
-      passport_country: asText(parsed.passport_country, 120),
-      expires_on: normalizeDate(parsed.expires_on),
-      confidence:
-        parsed.confidence === "high" || parsed.confidence === "medium" || parsed.confidence === "low"
-          ? parsed.confidence
-          : "low",
-    } satisfies ExtractedPassportInfo;
+    throw new Error(failures.join(" "));
   });
 
 export const listPassportAlerts = createServerFn({ method: "GET" })
