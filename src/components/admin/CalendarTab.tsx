@@ -43,7 +43,7 @@ export function CalendarTab() {
   });
 
   const saveM = useMutation({
-    mutationFn: (payload: Parameters<typeof save>[0]["data"]) => save({ data: payload }),
+    mutationFn: (payload: Record<string, unknown>) => save({ data: payload }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-appointments"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
