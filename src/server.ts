@@ -44,9 +44,20 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+function exposeRuntimeEnv(env: unknown) {
+  if (!env || typeof env !== "object") return;
+  const runtimeEnv = env as Record<string, unknown>;
+  for (const [key, value] of Object.entries(runtimeEnv)) {
+    if (typeof value === "string" && process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      exposeRuntimeEnv(env);
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
