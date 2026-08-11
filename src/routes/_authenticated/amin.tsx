@@ -25,9 +25,9 @@ import { SubscribersTab, ChatLogsTab, UsersTab } from "@/components/admin/ListsT
 import { OverviewTab } from "@/components/admin/OverviewTab";
 import { CalendarTab } from "@/components/admin/CalendarTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
-import { getPublicUrl, isAdminHost } from "@/lib/domains";
+import { getPublicUrl } from "@/lib/domains";
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/amin")({
   head: () => ({
     meta: [
       { title: "Control panel — Arkan Travel admin" },
@@ -73,19 +73,6 @@ function AdminPage() {
   const isAdmin = adminInfo?.isAdmin ?? false;
   const [tab, setTab] = useState<TabId>("overview");
   const [navOpen, setNavOpen] = useState(false);
-
-  if (!isAdminHost()) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-6">
-        <div className="max-w-md text-center">
-          <h1 className="text-2xl font-extrabold text-ink">Admin area moved</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            This control panel is not available on the public website.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (checking) return <p className="p-10 text-sm text-muted-foreground">{t("admin.checking")}</p>;
 

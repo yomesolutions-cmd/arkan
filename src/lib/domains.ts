@@ -1,5 +1,3 @@
-const localhostNames = new Set(["localhost", "127.0.0.1", "::1"]);
-
 function splitHosts(value: string | undefined) {
   return (value ?? "")
     .split(",")
@@ -10,16 +8,7 @@ function splitHosts(value: string | undefined) {
 export const adminHosts = splitHosts(import.meta.env["VITE_ADMIN_HOSTS"]);
 export const publicSiteUrl = (import.meta.env["VITE_PUBLIC_SITE_URL"] ?? "/").replace(/\/$/, "");
 
-export function isAdminHost(hostname = globalThis.location?.hostname ?? "") {
-  const normalized = hostname.toLowerCase();
-
-  if (localhostNames.has(normalized)) return true;
-  if (adminHosts.length === 0) return false;
-
-  return adminHosts.includes(normalized);
-}
-
-export function getAdminUrl(path = "/admin") {
+export function getAdminUrl(path = "/amin") {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const firstAdminHost = adminHosts[0];
 
