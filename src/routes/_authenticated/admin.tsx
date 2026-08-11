@@ -2,6 +2,18 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  FileText,
+  Quote,
+  Plane,
+  MessageSquare,
+  Activity,
+  Mail,
+  Users as UsersIcon,
+  Menu,
+} from "lucide-react";
 import { amIAdmin } from "@/lib/questions.functions";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -10,6 +22,8 @@ import { TestimonialsTab } from "@/components/admin/TestimonialsTab";
 import { CatalogTab } from "@/components/admin/CatalogTab";
 import { QuestionsTab } from "@/components/admin/QuestionsTab";
 import { SubscribersTab, ChatLogsTab, UsersTab } from "@/components/admin/ListsTab";
+import { OverviewTab } from "@/components/admin/OverviewTab";
+import { CalendarTab } from "@/components/admin/CalendarTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/admin")({
