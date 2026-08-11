@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Bell, CheckCircle2, MessageSquareText, Pencil, Trash2 } from "lucide-react";
+import { Bell, CheckCircle2, ImageUp, Loader2, MessageSquareText, Pencil, Sparkles, Trash2 } from "lucide-react";
 import {
   deletePassportAlert,
+  extractPassportInfoFromImage,
   listPassportAlerts,
   markPassportSmsSent,
   savePassportAlert,
@@ -57,7 +58,11 @@ export function PassportAlertsTab() {
   const save = useServerFn(savePassportAlert);
   const remove = useServerFn(deletePassportAlert);
   const markSent = useServerFn(markPassportSmsSent);
+  const extract = useServerFn(extractPassportInfoFromImage);
   const [form, setForm] = useState(emptyForm);
+  const [imageDataUrl, setImageDataUrl] = useState("");
+  const [imageName, setImageName] = useState("");
+  const [extractMessage, setExtractMessage] = useState("");
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ["admin-passport-alerts"],
@@ -89,6 +94,29 @@ export function PassportAlertsTab() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-passport-alerts"] }),
   });
 
+  const extractM = useMutation({
+    mutationFn: (payload: string) => extract({ data: { image_data_url: payload } }),
+    onSuccess: (info) => {
+      setForm((current) => {
+        const traveler_name = info.traveler_name ?? current.traveler_name;
+        const expires_on = info.expires_on ?? current.expires_on;
+        return {
+          ...current,
+          traveler_name,
+          passport_number: info.passport_number ?? current.passport_number,
+          passport_country: info.passport_country ?? current.passport_country,
+          expires_on,
+          sms_message:
+            traveler_name && expires_on ? defaultMessage(traveler_name, expires_on) : current.sms_message,
+        };
+      });
+      setExtractMessage(`Extracted with ${info.confidence} confidence.`);
+    },
+    onError: (error) => {
+      setExtractMessage(error instanceof Error ? error.message : "Could not extract passport details.");
+    },
+  });
+
   const counts = useMemo(() => {
     const due = alerts.filter((a) => !a.sms_sent_at && daysUntil(a.expires_on) <= a.reminder_days_before).length;
     const expired = alerts.filter((a) => daysUntil(a.expires_on) < 0).length;
@@ -98,6 +126,25 @@ export function PassportAlertsTab() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     saveM.mutate(form);
+  }
+
+  function readPassportImage(file: File) {
+    setExtractMessage("");
+    if (!file.type.startsWith("image/")) {
+      setExtractMessage("Please choose an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setExtractMessage("Image must be smaller than 5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageDataUrl(String(reader.result ?? ""));
+      setImageName(file.name);
+    };
+    reader.onerror = () => setExtractMessage("Could not read this image.");
+    reader.readAsDataURL(file);
   }
 
   function edit(alert: PassportAlert) {
@@ -226,6 +273,42 @@ export function PassportAlertsTab() {
           <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
             <Bell className="size-4" /> {form.id ? "Edit passport alert" : "Add passport alert"}
           </h2>
+          <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
+            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md bg-background px-3 py-2 text-sm font-semibold text-ink hover:bg-muted">
+              <span className="flex items-center gap-2 truncate">
+                <ImageUp className="size-4 text-coral" />
+                <span className="truncate">{imageName || "Upload passport image"}</span>
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) readPassportImage(file);
+                }}
+              />
+            </label>
+            {imageDataUrl && (
+              <div className="mt-3 grid gap-3">
+                <img
+                  src={imageDataUrl}
+                  alt="Selected passport"
+                  className="max-h-44 w-full rounded-lg object-cover"
+                />
+                <button
+                  type="button"
+                  disabled={extractM.isPending}
+                  onClick={() => extractM.mutate(imageDataUrl)}
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-background hover:bg-ink/90 disabled:opacity-60"
+                >
+                  {extractM.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                  Take info from image
+                </button>
+              </div>
+            )}
+            {extractMessage && <p className="mt-2 text-xs text-muted-foreground">{extractMessage}</p>}
+          </div>
           <input
             className={input}
             required

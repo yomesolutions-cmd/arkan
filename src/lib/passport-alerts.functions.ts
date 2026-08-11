@@ -19,6 +19,14 @@ export type PassportAlert = {
   updated_at: string;
 };
 
+export type ExtractedPassportInfo = {
+  traveler_name: string | null;
+  passport_number: string | null;
+  passport_country: string | null;
+  expires_on: string | null;
+  confidence: "low" | "medium" | "high";
+};
+
 const COLUMNS =
   "id, traveler_name, phone, email, passport_number, passport_country, passport_image_url, expires_on, reminder_days_before, sms_message, sms_sent_at, notes, created_at, updated_at";
 
@@ -35,6 +43,93 @@ const alertInput = z.object({
   sms_message: z.string().trim().max(500).nullable().optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
 });
+
+const extractInput = z.object({
+  image_data_url: z.string().startsWith("data:image/").max(7_000_000),
+});
+
+function parseJsonObject(text: string) {
+  const trimmed = text.trim();
+  const match = trimmed.match(/\{[\s\S]*\}/);
+  return JSON.parse(match ? match[0] : trimmed) as Partial<ExtractedPassportInfo>;
+}
+
+function normalizeDate(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  const dmy = trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+  if (!dmy) return null;
+  const [, dd, mm, yy] = dmy;
+  const year = yy.length === 2 ? `20${yy}` : yy;
+  return `${year}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+}
+
+function asText(value: unknown, max = 160) {
+  return typeof value === "string" && value.trim() ? value.trim().slice(0, max) : null;
+}
+
+export const extractPassportInfoFromImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => extractInput.parse(input))
+  .handler(async ({ data }) => {
+    const key = process.env["OPENAI_API_KEY"];
+    if (!key) {
+      throw new Error("OPENAI_API_KEY is not configured for passport image extraction.");
+    }
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: process.env["OPENAI_PASSPORT_MODEL"] || "gpt-4.1-mini",
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text:
+                  "Extract visible passport details for an admin form. Return only JSON with traveler_name, passport_number, passport_country, expires_on as YYYY-MM-DD, and confidence as low, medium, or high. Use null for anything unreadable.",
+              },
+              { type: "input_image", image_url: data.image_data_url },
+            ],
+          },
+        ],
+        max_output_tokens: 400,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Passport extraction failed: ${body.slice(0, 300)}`);
+    }
+
+    const result = await response.json();
+    const outputText =
+      result.output_text ??
+      result.output?.flatMap((item: { content?: { text?: string }[] }) => item.content ?? [])
+        .map((content: { text?: string }) => content.text)
+        .filter(Boolean)
+        .join("\n") ??
+      "";
+    const parsed = parseJsonObject(outputText);
+
+    return {
+      traveler_name: asText(parsed.traveler_name),
+      passport_number: asText(parsed.passport_number, 80),
+      passport_country: asText(parsed.passport_country, 120),
+      expires_on: normalizeDate(parsed.expires_on),
+      confidence:
+        parsed.confidence === "high" || parsed.confidence === "medium" || parsed.confidence === "low"
+          ? parsed.confidence
+          : "low",
+    } satisfies ExtractedPassportInfo;
+  });
 
 export const listPassportAlerts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
