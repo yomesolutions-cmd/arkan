@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          duration_min: number
+          email: string | null
+          id: string
+          kind: string
+          notes: string | null
+          phone: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          duration_min?: number
+          email?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          phone?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          duration_min?: number
+          email?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          phone?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           created_at: string
@@ -510,6 +558,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      appointment_status: "scheduled" | "done" | "cancelled"
       booking_item_type: "flight" | "hotel" | "tour"
       booking_status: "pending" | "confirmed" | "cancelled"
     }
@@ -640,6 +689,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      appointment_status: ["scheduled", "done", "cancelled"],
       booking_item_type: ["flight", "hotel", "tour"],
       booking_status: ["pending", "confirmed", "cancelled"],
     },
