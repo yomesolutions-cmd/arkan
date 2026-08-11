@@ -75,9 +75,6 @@ function Dashboard() {
             <Link to="/search" search={{ type: "tours" }} className="font-medium text-ink hover:text-coral">
               Search trips
             </Link>
-            <Link to="/admin" className="font-medium text-ink hover:text-coral">
-              Admin
-            </Link>
             <span className="hidden text-muted-foreground sm:inline">{email}</span>
             <button onClick={signOut} className="rounded-md border border-border px-4 py-2 font-semibold hover:bg-muted">
               Sign out

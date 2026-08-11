@@ -25,6 +25,7 @@ import { SubscribersTab, ChatLogsTab, UsersTab } from "@/components/admin/ListsT
 import { OverviewTab } from "@/components/admin/OverviewTab";
 import { CalendarTab } from "@/components/admin/CalendarTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
+import { getPublicUrl, isAdminHost } from "@/lib/domains";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -73,6 +74,19 @@ function AdminPage() {
   const [tab, setTab] = useState<TabId>("overview");
   const [navOpen, setNavOpen] = useState(false);
 
+  if (!isAdminHost()) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <div className="max-w-md text-center">
+          <h1 className="text-2xl font-extrabold text-ink">Admin area moved</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            This control panel is not available on the public website.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (checking) return <p className="p-10 text-sm text-muted-foreground">{t("admin.checking")}</p>;
 
   if (!isAdmin) {
@@ -99,9 +113,9 @@ function AdminPage() {
       <aside
         className={`${navOpen ? "block" : "hidden"} shrink-0 bg-ink p-4 text-background lg:block lg:w-64`}
       >
-        <Link to="/" className="flex items-center gap-2 rounded-xl bg-background/10 p-3">
+        <a href={getPublicUrl("/")} className="flex items-center gap-2 rounded-xl bg-background/10 p-3">
           <img src={logo.url} alt="Arkan Travel logo" className="h-9 w-auto" width={120} height={120} />
-        </Link>
+        </a>
         <nav className="mt-6 space-y-1">
           {TABS.map((tb) => (
             <button
@@ -119,12 +133,12 @@ function AdminPage() {
             </button>
           ))}
         </nav>
-        <Link
-          to="/dashboard"
+        <a
+          href={getPublicUrl("/dashboard")}
           className="mt-6 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-background/70 hover:bg-background/10"
         >
           {t("dash.title")}
-        </Link>
+        </a>
       </aside>
 
       <div className="flex-1">

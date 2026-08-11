@@ -1,18 +1,14 @@
-# Wanderlust Planner
+# Arkan Travel
 
 https://preview.themeforest.net/item/tripgo-travel-booking-html5-template/full_screen_preview/58005981?_gl=1*1na85tl*_gcl_au*MTI4MTU4NTY0Ny4xNzgxNzYyODA4*_ga*MzQ5NjM1MzIuMTc4MTc2MjgwOA..*_ga_ZKBVC1X78F*czE3ODU4NDAzMjAkbzExJGcxJHQxNzg1ODQxMDg3JGo2MCRsMCRoMA i want to have exactly thre same for this but use this logo
 
-This project was built with [Lovable](https://lovable.dev).
+## Domains
 
-**Live app**: https://arkantravel.lovable.app
+Use one public website domain and one separate admin domain.
 
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/52191948-df3c-4133-9ea9-c3dc736897df).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+- Public website: configure your normal domain.
+- Admin panel: configure a separate host, for example `admin.yourdomain.com`, and set `VITE_ADMIN_HOSTS=admin.yourdomain.com`.
+- If the admin panel needs to link back to the public website, set `VITE_PUBLIC_SITE_URL=https://yourdomain.com`.
 
 ## Development
 
