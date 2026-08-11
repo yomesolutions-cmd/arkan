@@ -281,6 +281,60 @@ export type Database = {
         }
         Relationships: []
       }
+      passport_alerts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          expires_on: string
+          id: string
+          notes: string | null
+          passport_country: string | null
+          passport_image_url: string | null
+          passport_number: string | null
+          phone: string
+          reminder_days_before: number
+          sms_message: string | null
+          sms_sent_at: string | null
+          traveler_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_on: string
+          id?: string
+          notes?: string | null
+          passport_country?: string | null
+          passport_image_url?: string | null
+          passport_number?: string | null
+          phone: string
+          reminder_days_before?: number
+          sms_message?: string | null
+          sms_sent_at?: string | null
+          traveler_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          expires_on?: string
+          id?: string
+          notes?: string | null
+          passport_country?: string | null
+          passport_image_url?: string | null
+          passport_number?: string | null
+          phone?: string
+          reminder_days_before?: number
+          sms_message?: string | null
+          sms_sent_at?: string | null
+          traveler_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

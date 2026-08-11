@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Activity,
   Mail,
+  ShieldCheck,
   Users as UsersIcon,
   Menu,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { QuestionsTab } from "@/components/admin/QuestionsTab";
 import { SubscribersTab, ChatLogsTab, UsersTab } from "@/components/admin/ListsTab";
 import { OverviewTab } from "@/components/admin/OverviewTab";
 import { CalendarTab } from "@/components/admin/CalendarTab";
+import { PassportAlertsTab } from "@/components/admin/PassportAlertsTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
 import { getPublicUrl } from "@/lib/domains";
 
@@ -51,6 +53,7 @@ export const Route = createFileRoute("/_authenticated/amin")({
 const TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
+  { id: "passports", label: "Passport alerts", icon: ShieldCheck },
   { id: "content", label: "Page content", icon: FileText },
   { id: "testimonials", label: "Testimonials", icon: Quote },
   { id: "trips", label: "Trips & catalog", icon: Plane },
@@ -150,6 +153,7 @@ function AdminPage() {
         <main className="px-6 py-8">
           {tab === "overview" && <OverviewTab />}
           {tab === "calendar" && <CalendarTab />}
+          {tab === "passports" && <PassportAlertsTab />}
           {tab === "content" && <ContentTab />}
           {tab === "testimonials" && <TestimonialsTab />}
           {tab === "trips" && <CatalogTab />}
