@@ -10,14 +10,14 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in — Arkan Travel" },
+      { title: "Sign in or sign up - Arkan Travel" },
       {
         name: "description",
         content:
-          "Sign in to Arkan Travel to manage all your reservations in one dashboard.",
+          "Sign in or create an Arkan Travel account to manage all your reservations in one dashboard.",
       },
-      { property: "og:title", content: "Sign in — Arkan Travel" },
-      { property: "og:description", content: "Access your Arkan Travel bookings dashboard." },
+      { property: "og:title", content: "Sign in or sign up - Arkan Travel" },
+      { property: "og:description", content: "Access or create your Arkan Travel bookings dashboard." },
     ],
   }),
   component: AuthPage,
@@ -32,6 +32,8 @@ function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const dest = safePath(search.redirect);
 
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,9 +51,30 @@ function AuthPage() {
     setError(null);
     setMessage(null);
     setLoading(true);
+
     try {
+      const trimmedEmail = email.trim();
+
+      if (mode === "signup") {
+        const { data, error: err } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { full_name: fullName.trim() },
+          },
+        });
+        if (err) throw err;
+        if (data.session) {
+          navigate({ to: dest, replace: true });
+          return;
+        }
+        setMessage("Check your inbox to confirm your account, then sign in.");
+        return;
+      }
+
       const { error: err } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: trimmedEmail,
         password,
       });
       if (err) throw err;
@@ -88,7 +111,9 @@ function AuthPage() {
           <img src={logo.url} alt="Arkan Travel logo" className="h-14 w-auto" width={160} height={160} />
         </Link>
         <p className="eyebrow mt-5 -rotate-2 text-center">Welcome</p>
-        <h1 className="mt-2 text-center text-3xl font-extrabold text-ink">Sign in to your trips</h1>
+        <h1 className="mt-2 text-center text-3xl font-extrabold text-ink">
+          {mode === "signin" ? "Sign in to your trips" : "Create your account"}
+        </h1>
 
         <button
           onClick={onGoogle}
@@ -102,6 +127,17 @@ function AuthPage() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <input
+              type="text"
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Full name"
+              maxLength={120}
+              className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-coral"
+            />
+          )}
           <input
             type="email"
             required
@@ -128,9 +164,23 @@ function AuthPage() {
             disabled={loading}
             className="w-full rounded-md bg-coral px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark disabled:opacity-60"
           >
-            {loading ? "Please wait…" : "Sign in"}
+            {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Sign up"}
           </button>
         </form>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          {mode === "signin" ? "Need an account?" : "Already have an account?"}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setMode((current) => (current === "signin" ? "signup" : "signin"));
+              setError(null);
+              setMessage(null);
+            }}
+            className="font-semibold text-coral transition-colors hover:text-coral-dark"
+          >
+            {mode === "signin" ? "Sign up" : "Sign in"}
+          </button>
+        </p>
       </div>
     </div>
   );
