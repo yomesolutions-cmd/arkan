@@ -171,6 +171,10 @@
   body {
     font-family: var(--font-sans);
   }
+  .custom-cursor-enabled,
+  .custom-cursor-enabled * {
+    cursor: none !important;
+  }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 800;
@@ -236,3 +240,204 @@
   }
 }
 
+@layer components {
+  .modern-cursor-ring,
+  .modern-cursor-dot {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      width 0.18s ease,
+      height 0.18s ease,
+      border-color 0.18s ease,
+      background-color 0.18s ease;
+    will-change: transform;
+  }
+
+  .modern-cursor-ring {
+    width: 2rem;
+    height: 2rem;
+    margin: -1rem 0 0 -1rem;
+    border: 1.5px solid var(--coral);
+    border-radius: 999px;
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--coral) 7%, transparent);
+  }
+
+  .modern-cursor-dot {
+    width: 0.42rem;
+    height: 0.42rem;
+    margin: -0.21rem 0 0 -0.21rem;
+    border-radius: 999px;
+    background: var(--brand);
+  }
+
+  .modern-cursor-ring.is-visible,
+  .modern-cursor-dot.is-visible {
+    opacity: 1;
+  }
+
+  .modern-cursor-ring.is-active {
+    width: 3.15rem;
+    height: 3.15rem;
+    margin: -1.575rem 0 0 -1.575rem;
+    border-color: var(--brand);
+    background: color-mix(in oklab, var(--brand) 10%, transparent);
+    box-shadow: 0 0 0 9px color-mix(in oklab, var(--brand) 8%, transparent);
+  }
+
+  .modern-cursor-dot.is-active {
+    width: 0.62rem;
+    height: 0.62rem;
+    margin: -0.31rem 0 0 -0.31rem;
+    background: var(--coral);
+  }
+
+  .testimonial-showcase {
+    position: relative;
+  }
+
+  .testimonial-showcase::before,
+  .testimonial-showcase::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  .testimonial-showcase::before {
+    width: 8rem;
+    height: 8rem;
+    inset-inline-start: 7%;
+    top: 15%;
+    background: color-mix(in oklab, var(--brand) 12%, transparent);
+  }
+
+  .testimonial-showcase::after {
+    width: 10rem;
+    height: 10rem;
+    inset-inline-end: 9%;
+    bottom: 18%;
+    background: color-mix(in oklab, var(--coral) 10%, transparent);
+  }
+
+  .testimonial-card {
+    z-index: 2;
+  }
+
+  .testimonial-stack {
+    position: absolute;
+    left: 50%;
+    z-index: 1;
+    width: min(88%, 37rem);
+    height: 4.25rem;
+    border-radius: 0.75rem;
+    background: var(--card);
+    box-shadow: 0 24px 60px -46px var(--ink);
+    transform: translateX(-50%);
+  }
+
+  .testimonial-stack-1 {
+    top: 17.8rem;
+    opacity: 0.82;
+  }
+
+  .testimonial-stack-2 {
+    top: 19rem;
+    width: min(80%, 33rem);
+    opacity: 0.62;
+  }
+
+  .testimonial-avatar {
+    position: absolute;
+    z-index: 3;
+    display: none;
+    width: 4rem;
+    height: 4rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: 0 18px 45px -28px var(--ink);
+    transition:
+      transform 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .testimonial-avatar-inner {
+    display: flex;
+    width: 3.15rem;
+    height: 3.15rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--brand), var(--sun));
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  .testimonial-avatar:hover,
+  .testimonial-avatar.is-active {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 26px 55px -30px var(--ink);
+  }
+
+  .testimonial-avatar.is-active .testimonial-avatar-inner {
+    background: linear-gradient(135deg, var(--coral), var(--sun));
+    color: var(--primary-foreground);
+  }
+
+  @media (min-width: 768px) {
+    .testimonial-avatar {
+      display: flex;
+    }
+
+    .testimonial-avatar-0 {
+      left: 11%;
+      top: 2rem;
+    }
+
+    .testimonial-avatar-1 {
+      right: 10%;
+      top: 2.25rem;
+    }
+
+    .testimonial-avatar-2 {
+      left: 2%;
+      top: 12.5rem;
+      width: 3.6rem;
+      height: 3.6rem;
+    }
+
+    .testimonial-avatar-3 {
+      right: 0;
+      top: 12.25rem;
+      width: 3.3rem;
+      height: 3.3rem;
+    }
+
+    .testimonial-avatar-4 {
+      left: 21%;
+      bottom: 4.6rem;
+    }
+
+    .testimonial-avatar-5 {
+      right: 20%;
+      bottom: 5rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .testimonial-stack {
+      top: 21rem;
+    }
+
+    .testimonial-stack-2 {
+      top: 22.1rem;
+    }
+  }
+}

@@ -88,15 +88,24 @@ const features = [
   { icon: Clock, title: "feat.fast.title", text: "feat.fast.text" },
 ] as const;
 
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "A";
+  const second = parts.length > 1 ? parts[parts.length - 1]?.[0] : parts[0]?.[1];
+  return `${first}${second ?? ""}`.toUpperCase();
+}
+
 function Index() {
   const { t, lang } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
   const navigate = useNavigate();
   const { data } = useSuspenseQuery(homeQuery);
   const { data: site } = useSuspenseQuery(contentQuery);
   const destinations = data.destinations;
   const packages = data.tours;
+  const testimonials = site.testimonials;
 
   const sec = (name: string) => site.sections[name]?.[lang] ?? site.sections[name]?.en ?? {};
   const heroC = sec("hero");
@@ -107,6 +116,8 @@ function Index() {
   const ar = lang === "ar";
   const L = (en: string | null | undefined, arv: string | null | undefined) =>
     ar ? (arv?.trim() ? arv : (en ?? "")) : (en?.trim() ? en : (arv ?? ""));
+  const activeTestimonial = testimonials[testimonialIndex % testimonials.length] ?? testimonials[0];
+  const featuredTestimonials = testimonials.slice(0, 6);
 
   const [dest, setDest] = useState("");
   const [activity, setActivity] = useState("");
@@ -462,26 +473,69 @@ function Index() {
       </section>
 
       {/* Testimonials */}
-      {site.testimonials.length > 0 && (
-        <section className="section-pad mx-auto max-w-7xl px-6">
+      {activeTestimonial && (
+        <section className="testimonial-showcase topo section-pad overflow-hidden">
+          <div className="mx-auto max-w-7xl px-6">
           <div className="text-center">
             <p className="eyebrow -rotate-2">{testiC["eyebrow"]}</p>
             <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">{testiC["title"]}</h2>
             <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground">{testiC["subtitle"]}</p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {site.testimonials.map((tm) => (
-              <figure key={tm.id} className="rounded-2xl bg-mint p-8">
-                <Quote className="size-7 text-coral" />
-                <blockquote className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {L(tm.quote_en, tm.quote_ar)}
-                </blockquote>
-                <figcaption className="mt-6">
-                  <p className="text-sm font-bold">{L(tm.name_en, tm.name_ar)}</p>
-                  <p className="text-xs text-muted-foreground">{L(tm.role_en, tm.role_ar)}</p>
-                </figcaption>
-              </figure>
-            ))}
+          <div className="relative mx-auto mt-12 min-h-[26rem] max-w-5xl md:min-h-[31rem]">
+            {featuredTestimonials.map((tm, i) => {
+              const name = L(tm.name_en, tm.name_ar);
+              const active = tm.id === activeTestimonial.id;
+              return (
+                <button
+                  key={tm.id}
+                  type="button"
+                  onClick={() => setTestimonialIndex(i)}
+                  aria-label={`Show review from ${name}`}
+                  className={`testimonial-avatar testimonial-avatar-${i} ${active ? "is-active" : ""}`}
+                >
+                  <span className="testimonial-avatar-inner">{initials(name)}</span>
+                </button>
+              );
+            })}
+
+            <figure className="testimonial-card relative mx-auto max-w-xl rounded-xl bg-card px-8 py-10 text-center shadow-[0_30px_70px_-45px_var(--ink)] md:max-w-2xl md:px-16 md:py-12">
+              <blockquote className="mx-auto max-w-xl text-base font-medium leading-8 text-ink md:text-lg">
+                {L(activeTestimonial.quote_en, activeTestimonial.quote_ar)}
+              </blockquote>
+              <figcaption className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <span className="flex size-20 items-center justify-center rounded-full bg-sun text-xl font-extrabold text-ink shadow-lg ring-4 ring-background">
+                  {initials(L(activeTestimonial.name_en, activeTestimonial.name_ar))}
+                </span>
+                <span className="text-center sm:text-start">
+                  <span className="block text-base font-extrabold text-ink">
+                    {L(activeTestimonial.name_en, activeTestimonial.name_ar)}
+                  </span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    {L(activeTestimonial.role_en, activeTestimonial.role_ar)}
+                  </span>
+                </span>
+              </figcaption>
+              <Quote className="pointer-events-none absolute bottom-7 end-8 size-24 text-coral/10 md:size-36" />
+            </figure>
+            <div className="testimonial-stack testimonial-stack-1" />
+            <div className="testimonial-stack testimonial-stack-2" />
+
+            {testimonials.length > 1 && (
+              <div className="absolute inset-x-0 bottom-2 flex justify-center gap-3 md:bottom-8">
+                {testimonials.slice(0, 5).map((tm, i) => (
+                  <button
+                    key={tm.id}
+                    type="button"
+                    onClick={() => setTestimonialIndex(i)}
+                    aria-label={`Show testimonial ${i + 1}`}
+                    className={`size-2.5 rounded-full transition-all ${
+                      i === testimonialIndex ? "w-7 bg-coral" : "bg-coral/25 hover:bg-coral/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           </div>
         </section>
       )}
