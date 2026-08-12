@@ -1,6 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -15,7 +13,6 @@ import {
   Users as UsersIcon,
   Menu,
 } from "lucide-react";
-import { amIAdmin } from "@/lib/questions.functions";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ContentTab } from "@/components/admin/ContentTab";
@@ -29,7 +26,7 @@ import { PassportAlertsTab } from "@/components/admin/PassportAlertsTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
 import { getPublicUrl } from "@/lib/domains";
 
-export const Route = createFileRoute("/_authenticated/amin")({
+export const Route = createFileRoute("/amin")({
   head: () => ({
     meta: [
       { title: "Control panel — Arkan Travel admin" },
@@ -66,35 +63,9 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 function AdminPage() {
-  const navigate = useNavigate();
   const { t } = useI18n();
-  const checkAdmin = useServerFn(amIAdmin);
-  const { data: adminInfo, isLoading: checking } = useQuery({
-    queryKey: ["am-i-admin"],
-    queryFn: () => checkAdmin(),
-  });
-  const isAdmin = adminInfo?.isAdmin ?? false;
   const [tab, setTab] = useState<TabId>("overview");
   const [navOpen, setNavOpen] = useState(false);
-
-  if (checking) return <p className="p-10 text-sm text-muted-foreground">{t("admin.checking")}</p>;
-
-  if (!isAdmin) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="max-w-md text-center">
-          <h1 className="text-2xl font-extrabold text-ink">{t("admin.onlyAdmins")}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{t("admin.noAccess")}</p>
-          <button
-            onClick={() => navigate({ to: "/dashboard" })}
-            className="mt-6 rounded-md bg-coral px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-coral-dark"
-          >
-            {t("dash.title")}
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const active = TABS.find((x) => x.id === tab)!;
 

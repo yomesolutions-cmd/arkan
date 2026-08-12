@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AminRouteImport } from './routes/amin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SearchRouteImport } from './routes/search'
-import { Route as AuthenticatedAminRouteImport } from './routes/_authenticated/amin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AminRoute = AminRouteImport.update({
+  id: '/amin',
+  path: '/amin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -35,11 +40,6 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAminRoute = AuthenticatedAminRouteImport.update({
-  id: '/amin',
-  path: '/amin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -48,45 +48,46 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/amin': typeof AminRoute
   '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
-  '/amin': typeof AuthenticatedAminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/amin': typeof AminRoute
   '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
-  '/amin': typeof AuthenticatedAminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/amin': typeof AminRoute
   '/auth': typeof AuthRoute
   '/search': typeof SearchRoute
-  '/_authenticated/amin': typeof AuthenticatedAminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/search' | '/amin' | '/dashboard'
+  fullPaths: '/' | '/amin' | '/auth' | '/search' | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/search' | '/amin' | '/dashboard'
+  to: '/' | '/amin' | '/auth' | '/search' | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/amin'
     | '/auth'
     | '/search'
-    | '/_authenticated/amin'
     | '/_authenticated/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AminRoute: typeof AminRoute
   AuthRoute: typeof AuthRoute
   SearchRoute: typeof SearchRoute
 }
@@ -107,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/amin': {
+      id: '/amin'
+      path: '/amin'
+      fullPath: '/amin'
+      preLoaderRoute: typeof AminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -121,13 +129,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/amin': {
-      id: '/_authenticated/amin'
-      path: '/amin'
-      fullPath: '/amin'
-      preLoaderRoute: typeof AuthenticatedAminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -139,12 +140,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAminRoute: typeof AuthenticatedAminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAminRoute: AuthenticatedAminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
 }
 
@@ -154,6 +153,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AminRoute: AminRoute,
   AuthRoute: AuthRoute,
   SearchRoute: SearchRoute,
 }

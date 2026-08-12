@@ -77,9 +77,6 @@ function Dashboard() {
             <Link to="/search" search={{ type: "tours" }} className="font-medium text-ink hover:text-coral">
               Search trips
             </Link>
-            <Link to="/amin" className="font-medium text-ink hover:text-coral">
-              Admin
-            </Link>
             <div className="relative">
               <button
                 type="button"
