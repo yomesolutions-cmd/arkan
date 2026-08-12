@@ -7,6 +7,8 @@ import { searchCatalog } from "@/lib/catalog.functions";
 import { createBooking } from "@/lib/bookings.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { imageFor } from "@/lib/images";
+import { useI18n } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import logo from "@/assets/arkan-logo.png.asset.json";
 
 type SearchType = "tours" | "flights" | "hotels";
@@ -79,10 +81,13 @@ export const Route = createFileRoute("/search")({
 function SearchPage() {
   const params = Route.useSearch();
   const navigate = useNavigate();
+  const { t: translate, pick, lang } = useI18n();
   const runSearch = useServerFn(searchCatalog);
   const book = useServerFn(createBooking);
   const [signedIn, setSignedIn] = useState(false);
   const [booked, setBooked] = useState<string | null>(null);
+  const isAr = lang === "ar";
+  const tr = (en: string, ar: string) => (isAr ? ar : en);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setSignedIn(Boolean(data.user)));
@@ -137,10 +142,11 @@ function SearchPage() {
   }
 
   const tabs: { key: SearchType; label: string; icon: typeof Plane }[] = [
-    { key: "tours", label: "Tours", icon: Map },
-    { key: "flights", label: "Flights", icon: Plane },
-    { key: "hotels", label: "Hotels", icon: Hotel },
+    { key: "tours", label: translate("search.tours"), icon: Map },
+    { key: "flights", label: translate("search.flights"), icon: Plane },
+    { key: "hotels", label: translate("search.hotels"), icon: Hotel },
   ];
+  const resultCount = (data?.tours.length ?? 0) + (data?.hotels.length ?? 0) + (data?.flights.length ?? 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,13 +156,14 @@ function SearchPage() {
             <img src={logo.url} alt="Arkan Travel logo" className="h-12 w-auto" width={160} height={160} />
           </Link>
           <div className="flex items-center gap-4 text-sm">
+            <LanguageToggle />
             {signedIn ? (
               <Link to="/dashboard" className="font-semibold text-coral">
-                My bookings
+                {translate("nav.myBookings")}
               </Link>
             ) : (
               <Link to="/auth" search={{ redirect: "/dashboard" }} className="font-semibold text-coral">
-                Sign in
+                {translate("nav.login")}
               </Link>
             )}
           </div>
@@ -182,26 +189,26 @@ function SearchPage() {
           <div className="grid gap-4 rounded-b-xl rounded-tr-xl bg-card p-6 md:grid-cols-4">
             {params.type === "flights" ? (
               <>
-                <Input label="From" value={params.from ?? ""} onChange={(v) => setParam({ from: v })} placeholder="Istanbul" />
-                <Input label="To" value={params.to ?? ""} onChange={(v) => setParam({ to: v })} placeholder="Dubai" />
+                <Input label={tr("From", "من")} value={params.from ?? ""} onChange={(v) => setParam({ from: v })} placeholder="Istanbul" />
+                <Input label={tr("To", "إلى")} value={params.to ?? ""} onChange={(v) => setParam({ to: v })} placeholder="Dubai" />
               </>
             ) : (
               <Input
-                label={params.type === "hotels" ? "City" : "Destination"}
+                label={params.type === "hotels" ? tr("City", "المدينة") : translate("search.destination")}
                 value={params.q ?? ""}
                 onChange={(v) => setParam({ q: v })}
-                placeholder="Where are you going?"
+                placeholder={translate("search.destinationPh")}
               />
             )}
             <Input
-              label="Travel date"
+              label={translate("search.dates")}
               type="date"
               value={params.date ?? ""}
               onChange={(v) => setParam({ date: v })}
               placeholder=""
             />
             <Input
-              label="Guests"
+              label={translate("search.guests")}
               type="number"
               value={String(params.guests ?? 2)}
               onChange={(v) => setParam({ guests: Number(v) || 1 })}
@@ -214,10 +221,12 @@ function SearchPage() {
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[260px_1fr]">
         {/* Filters */}
         <aside className="space-y-6 rounded-2xl bg-mint p-6">
-          <h2 className="text-sm font-extrabold uppercase tracking-widest text-ink">Filters</h2>
+          <h2 className="text-sm font-extrabold uppercase tracking-widest text-ink">{translate("search.filters")}</h2>
 
           <div>
-            <label className="text-xs font-bold text-ink">Max price (${params.maxPrice ?? 2000})</label>
+            <label className="text-xs font-bold text-ink">
+              {tr("Max price", "أعلى سعر")} (${params.maxPrice ?? 2000})
+            </label>
             <input
               type="range"
               min={50}
@@ -231,50 +240,64 @@ function SearchPage() {
 
           {params.type === "tours" && (
             <Select
-              label="Category"
+              label={tr("Category", "الفئة")}
               value={params.category ?? ""}
               onChange={(v) => setParam({ category: v || undefined })}
               options={["", "City", "Beach", "Culture", "Adventure"]}
+              labels={{
+                "": tr("Any", "الكل"),
+                City: tr("City", "مدينة"),
+                Beach: tr("Beach", "شاطئ"),
+                Culture: tr("Culture", "ثقافة"),
+                Adventure: tr("Adventure", "مغامرة"),
+              }}
             />
           )}
           {params.type === "hotels" && (
             <Select
-              label="Minimum stars"
+              label={tr("Minimum stars", "أقل تصنيف")}
               value={String(params.stars ?? "")}
               onChange={(v) => setParam({ stars: v ? Number(v) : undefined })}
               options={["", "3", "4", "5"]}
+              labels={{ "": tr("Any", "الكل") }}
             />
           )}
           {params.type === "flights" && (
             <>
               <Select
-                label="Max stops"
+                label={tr("Max stops", "أقصى توقفات")}
                 value={params.stops !== undefined ? String(params.stops) : ""}
                 onChange={(v) => setParam({ stops: v === "" ? undefined : Number(v) })}
                 options={["", "0", "1", "2"]}
+                labels={{ "": tr("Any", "الكل"), "0": tr("Direct", "مباشر") }}
               />
               <Select
-                label="Cabin"
+                label={tr("Cabin", "درجة السفر")}
                 value={params.cabin ?? ""}
                 onChange={(v) => setParam({ cabin: v || undefined })}
                 options={["", "Economy", "Business"]}
+                labels={{ "": tr("Any", "الكل"), Economy: tr("Economy", "اقتصادي"), Business: tr("Business", "أعمال") }}
               />
             </>
           )}
 
           <Select
-            label="Sort by"
+            label={tr("Sort by", "ترتيب حسب")}
             value={params.sort ?? "price_asc"}
             onChange={(v) => setParam({ sort: v as Sort })}
             options={["price_asc", "price_desc", "rating"]}
-            labels={{ price_asc: "Price: low to high", price_desc: "Price: high to low", rating: "Top rated" }}
+            labels={{
+              price_asc: tr("Price: low to high", "السعر: من الأقل إلى الأعلى"),
+              price_desc: tr("Price: high to low", "السعر: من الأعلى إلى الأقل"),
+              rating: tr("Top rated", "الأعلى تقييما"),
+            }}
           />
 
           <button
             onClick={() => navigate({ to: "/search", search: { type: params.type, sort: "price_asc" } })}
             className="w-full rounded-md border border-border bg-background px-4 py-2.5 text-xs font-semibold hover:bg-muted"
           >
-            Reset filters
+            {tr("Reset filters", "إعادة التصفية")}
           </button>
         </aside>
 
@@ -283,22 +306,26 @@ function SearchPage() {
           <div className="flex items-baseline justify-between">
             <h1 className="text-2xl font-extrabold text-ink">
               {isLoading
-                ? "Searching…"
-                : `${(data?.tours.length ?? 0) + (data?.hotels.length ?? 0) + (data?.flights.length ?? 0)} ${params.type} found`}
+                ? tr("Searching...", "جار البحث...")
+                : isAr
+                  ? `${resultCount} نتيجة`
+                  : `${resultCount} ${params.type} found`}
             </h1>
           </div>
 
           {booked && (
             <div className="mt-4 rounded-xl bg-accent p-4 text-sm text-accent-foreground">
-              Booking request created.{" "}
+              {tr("Booking request created.", "تم إنشاء طلب الحجز.")}{" "}
               <Link to="/dashboard" className="font-bold underline">
-                View it in your dashboard
+                {tr("View it in your dashboard", "اعرضه في لوحة حجوزاتك")}
               </Link>
               .
             </div>
           )}
           {bookM.isError && (
-            <p className="mt-4 text-sm text-destructive">Could not create the booking. Please try again.</p>
+            <p className="mt-4 text-sm text-destructive">
+              {tr("Could not create the booking. Please try again.", "تعذر إنشاء الحجز. حاول مرة أخرى.")}
+            </p>
           )}
 
           <div className="mt-6 space-y-4">
@@ -306,7 +333,7 @@ function SearchPage() {
               <article key={t.id} className="card-lift flex flex-col gap-5 rounded-2xl bg-card p-5 sm:flex-row">
                 <img
                   src={imageFor(t.image_key)}
-                  alt={t.title}
+                  alt={pick(t.title, t.title_ar)}
                   loading="lazy"
                   width={400}
                   height={300}
@@ -314,16 +341,17 @@ function SearchPage() {
                 />
                 <div className="flex-1">
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <MapPin className="size-3.5 text-coral" /> {t.place} · {t.category}
+                    <MapPin className="size-3.5 text-coral" /> {pick(t.place, t.place_ar)} ·{" "}
+                    {tr(t.category, { City: "مدينة", Beach: "شاطئ", Culture: "ثقافة", Adventure: "مغامرة" }[t.category] ?? t.category)}
                   </p>
-                  <h2 className="mt-1 text-lg font-bold text-ink">{t.title}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{t.description}</p>
+                  <h2 className="mt-1 text-lg font-bold text-ink">{pick(t.title, t.title_ar)}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{pick(t.description, t.description_ar)}</p>
                   <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <Clock className="size-3.5" /> {t.days} days / {t.nights} nights
+                      <Clock className="size-3.5" /> {t.days} {tr("days", "أيام")} / {t.nights} {tr("nights", "ليال")}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Users className="size-3.5" /> {t.min_people}-{t.max_people} people
+                      <Users className="size-3.5" /> {t.min_people}-{t.max_people} {tr("people", "أشخاص")}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Star className="size-3.5 fill-sun text-sun" /> {t.rating}
@@ -332,15 +360,17 @@ function SearchPage() {
                 </div>
                 <BookBox
                   price={Number(t.price)}
-                  unit="per person"
+                  unit={tr("per person", "للشخص")}
+                  bookLabel={translate("search.book")}
+                  signInLabel={tr("Sign in to book", "سجل الدخول للحجز")}
                   signedIn={signedIn}
                   pending={bookM.isPending}
                   onBook={() =>
                     bookM.mutate({
                       item_type: "tour",
                       item_id: t.id,
-                      title: t.title,
-                      subtitle: `${t.place} · ${t.days} days`,
+                      title: pick(t.title, t.title_ar),
+                      subtitle: `${pick(t.place, t.place_ar)} · ${t.days} ${tr("days", "أيام")}`,
                       total_price: Number(t.price) * (params.guests ?? 2),
                     })
                   }
@@ -352,7 +382,7 @@ function SearchPage() {
               <article key={h.id} className="card-lift flex flex-col gap-5 rounded-2xl bg-card p-5 sm:flex-row">
                 <img
                   src={imageFor(h.image_key)}
-                  alt={h.name}
+                  alt={pick(h.name, h.name_ar)}
                   loading="lazy"
                   width={400}
                   height={300}
@@ -360,25 +390,27 @@ function SearchPage() {
                 />
                 <div className="flex-1">
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <MapPin className="size-3.5 text-coral" /> {h.city}, {h.country}
+                    <MapPin className="size-3.5 text-coral" /> {pick(h.city, h.city_ar)}, {h.country}
                   </p>
-                  <h2 className="mt-1 text-lg font-bold text-ink">{h.name}</h2>
+                  <h2 className="mt-1 text-lg font-bold text-ink">{pick(h.name, h.name_ar)}</h2>
                   <p className="mt-1 text-xs text-muted-foreground">{"★".repeat(h.stars)} · {h.amenities.join(" · ")}</p>
                   <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Star className="size-3.5 fill-sun text-sun" /> {h.rating} guest rating
+                    <Star className="size-3.5 fill-sun text-sun" /> {h.rating} {tr("guest rating", "تقييم الضيوف")}
                   </p>
                 </div>
                 <BookBox
                   price={Number(h.price_per_night)}
-                  unit="per night"
+                  unit={tr("per night", "لليلة")}
+                  bookLabel={translate("search.book")}
+                  signInLabel={tr("Sign in to book", "سجل الدخول للحجز")}
                   signedIn={signedIn}
                   pending={bookM.isPending}
                   onBook={() =>
                     bookM.mutate({
                       item_type: "hotel",
                       item_id: h.id,
-                      title: h.name,
-                      subtitle: `${h.city}, ${h.country}`,
+                      title: pick(h.name, h.name_ar),
+                      subtitle: `${pick(h.city, h.city_ar)}, ${h.country}`,
                       total_price: Number(h.price_per_night),
                     })
                   }
@@ -393,10 +425,11 @@ function SearchPage() {
                 </span>
                 <div className="flex-1">
                   <h2 className="text-lg font-bold text-ink">
-                    {f.from_city} → {f.to_city}
+                    {pick(f.from_city, f.from_city_ar)} → {pick(f.to_city, f.to_city_ar)}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {f.airline} {f.flight_no} · {f.cabin} · {f.stops === 0 ? "Direct" : `${f.stops} stop`}
+                    {pick(f.airline, f.airline_ar)} {f.flight_no} · {tr(f.cabin, f.cabin === "Business" ? "أعمال" : "اقتصادي")} ·{" "}
+                    {f.stops === 0 ? tr("Direct", "مباشر") : `${f.stops} ${tr("stop", "توقف")}`}
                   </p>
                   <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Clock className="size-3.5" />
@@ -405,15 +438,17 @@ function SearchPage() {
                 </div>
                 <BookBox
                   price={Number(f.price)}
-                  unit="per seat"
+                  unit={tr("per seat", "للمقعد")}
+                  bookLabel={translate("search.book")}
+                  signInLabel={tr("Sign in to book", "سجل الدخول للحجز")}
                   signedIn={signedIn}
                   pending={bookM.isPending}
                   onBook={() =>
                     bookM.mutate({
                       item_type: "flight",
                       item_id: f.id,
-                      title: `${f.from_city} → ${f.to_city}`,
-                      subtitle: `${f.airline} ${f.flight_no} · ${f.cabin}`,
+                      title: `${pick(f.from_city, f.from_city_ar)} → ${pick(f.to_city, f.to_city_ar)}`,
+                      subtitle: `${pick(f.airline, f.airline_ar)} ${f.flight_no} · ${tr(f.cabin, f.cabin === "Business" ? "أعمال" : "اقتصادي")}`,
                       total_price: Number(f.price) * (params.guests ?? 2),
                     })
                   }
@@ -424,7 +459,10 @@ function SearchPage() {
             {!isLoading &&
               (data?.tours.length ?? 0) + (data?.hotels.length ?? 0) + (data?.flights.length ?? 0) === 0 && (
                 <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-                  Nothing matches these filters yet — try widening your price range or clearing the destination.
+                  {tr(
+                    "Nothing matches these filters yet - try widening your price range or clearing the destination.",
+                    "لا توجد نتائج مطابقة بعد - جرب توسيع نطاق السعر أو مسح الوجهة.",
+                  )}
                 </p>
               )}
           </div>
@@ -437,12 +475,16 @@ function SearchPage() {
 function BookBox({
   price,
   unit,
+  bookLabel,
+  signInLabel,
   signedIn,
   pending,
   onBook,
 }: {
   price: number;
   unit: string;
+  bookLabel: string;
+  signInLabel: string;
   signedIn: boolean;
   pending: boolean;
   onBook: () => void;
@@ -457,7 +499,7 @@ function BookBox({
           disabled={pending}
           className="rounded-md bg-coral px-5 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-coral-dark disabled:opacity-60"
         >
-          Book now
+          {bookLabel}
         </button>
       ) : (
         <Link
@@ -465,7 +507,7 @@ function BookBox({
           search={{ redirect: "/dashboard" }}
           className="rounded-md border border-coral px-5 py-2.5 text-xs font-semibold text-coral hover:bg-coral hover:text-primary-foreground"
         >
-          Sign in to book
+          {signInLabel}
         </Link>
       )}
     </div>

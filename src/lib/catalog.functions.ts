@@ -44,6 +44,11 @@ const searchSchema = z.object({
 
 export type SearchInput = z.infer<typeof searchSchema>;
 
+function containsAny(term: string, columns: string[]) {
+  const safeTerm = term.replace(/[,()]/g, " ").trim();
+  return columns.map((column) => `${column}.ilike.%${safeTerm}%`).join(",");
+}
+
 export const searchCatalog = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => searchSchema.parse(input))
   .handler(async ({ data }) => {
@@ -52,9 +57,9 @@ export const searchCatalog = createServerFn({ method: "GET" })
 
     if (data.type === "flights") {
       let q = supabase.from("flights").select("*");
-      if (data.from) q = q.ilike("from_city", `%${data.from}%`);
-      if (data.to) q = q.ilike("to_city", `%${data.to}%`);
-      if (data.q) q = q.or(`from_city.ilike.%${data.q}%,to_city.ilike.%${data.q}%,airline.ilike.%${data.q}%`);
+      if (data.from) q = q.or(containsAny(data.from, ["from_city", "from_city_ar"]));
+      if (data.to) q = q.or(containsAny(data.to, ["to_city", "to_city_ar"]));
+      if (data.q) q = q.or(containsAny(data.q, ["from_city", "from_city_ar", "to_city", "to_city_ar", "airline", "airline_ar"]));
       if (data.maxPrice) q = q.lte("price", data.maxPrice);
       if (data.cabin) q = q.eq("cabin", data.cabin);
       if (data.stops !== undefined) q = q.lte("stops", data.stops);
@@ -66,7 +71,7 @@ export const searchCatalog = createServerFn({ method: "GET" })
     if (data.type === "hotels") {
       let q = supabase.from("hotels").select("*");
       const term = data.q || data.to;
-      if (term) q = q.or(`city.ilike.%${term}%,country.ilike.%${term}%,name.ilike.%${term}%`);
+      if (term) q = q.or(containsAny(term, ["city", "city_ar", "country", "name", "name_ar"]));
       if (data.maxPrice) q = q.lte("price_per_night", data.maxPrice);
       if (data.stars) q = q.gte("stars", data.stars);
       const { data: rows, error } =
@@ -79,7 +84,7 @@ export const searchCatalog = createServerFn({ method: "GET" })
 
     let q = supabase.from("tour_packages").select("*");
     const term = data.q || data.to;
-    if (term) q = q.or(`title.ilike.%${term}%,place.ilike.%${term}%,description.ilike.%${term}%`);
+    if (term) q = q.or(containsAny(term, ["title", "title_ar", "place", "place_ar", "description", "description_ar"]));
     if (data.maxPrice) q = q.lte("price", data.maxPrice);
     if (data.category) q = q.eq("category", data.category);
     const { data: rows, error } =
