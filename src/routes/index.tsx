@@ -24,6 +24,8 @@ import {
   Mail,
   Menu,
   X,
+  Plane,
+  Hotel,
   Facebook,
   Instagram,
   Send,
@@ -86,6 +88,13 @@ const features = [
   { icon: ShieldCheck, title: "feat.safe.title", text: "feat.safe.text" },
   { icon: Headphones, title: "feat.support.title", text: "feat.support.text" },
   { icon: Clock, title: "feat.fast.title", text: "feat.fast.text" },
+] as const;
+
+const heroServices = [
+  { icon: Plane, label: "hero.service.flights" },
+  { icon: Hotel, label: "hero.service.hotels" },
+  { icon: Flag, label: "hero.service.tours" },
+  { icon: ShieldCheck, label: "hero.service.visa" },
 ] as const;
 
 function initials(name: string) {
@@ -171,34 +180,34 @@ function Index() {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background">
+      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/92 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <a href="#home" className="flex items-center">
-            <img src={logo.url} alt="Arkan Travel logo" className="h-14 w-auto" width={160} height={160} />
+            <img src={logo.url} alt="Arkan Travel logo" className="h-12 w-auto md:h-14" width={160} height={160} />
           </a>
-          <nav className="hidden items-center gap-10 lg:flex">
+          <nav className="hidden items-center gap-2 rounded-full border border-border/80 bg-background/80 p-1 shadow-sm lg:flex">
             {navLinks.map((l, i) => (
               <a
                 key={l.key}
                 href={l.href}
-                className={`text-[0.95rem] font-medium transition-colors hover:text-coral ${
-                  i === 0 ? "text-coral" : "text-ink"
+                className={`rounded-full px-4 py-2 text-[0.9rem] font-semibold transition-colors hover:bg-brand-soft hover:text-brand ${
+                  i === 0 ? "bg-brand-soft text-brand" : "text-ink"
                 }`}
               >
                 {t(l.key)}
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <LanguageToggle />
             {signedIn ? (
               <>
-                <Link to="/amin" className="hidden text-[0.95rem] font-medium text-ink hover:text-coral md:inline">
+                <Link to="/amin" className="hidden text-[0.95rem] font-semibold text-ink hover:text-brand md:inline">
                   {t("nav.admin")}
                 </Link>
                 <Link
                   to="/dashboard"
-                  className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
+                  className="hidden rounded-full bg-coral px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-coral/20 transition-colors hover:bg-coral-dark sm:inline-flex"
                 >
                   {t("nav.myBookings")}
                 </Link>
@@ -209,7 +218,7 @@ function Index() {
                 search={{ redirect: "/dashboard" }}
                 aria-label={t("nav.login")}
                 title={t("nav.login")}
-                className="hidden size-11 items-center justify-center rounded-full bg-coral text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
+                className="hidden size-11 items-center justify-center rounded-full bg-coral text-primary-foreground shadow-lg shadow-coral/20 transition-colors hover:bg-coral-dark sm:inline-flex"
               >
                 <User className="size-5" />
               </Link>
@@ -217,20 +226,20 @@ function Index() {
             <button
               aria-label={t("nav.menu")}
               onClick={() => setMenuOpen((v) => !v)}
-              className="rounded-md border border-border p-2 lg:hidden"
+              className="rounded-full border border-border bg-background p-2.5 text-ink lg:hidden"
             >
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
         </div>
         {menuOpen && (
-          <nav className="border-t border-border bg-background px-6 py-4 lg:hidden">
+          <nav className="border-t border-border bg-background px-6 py-4 shadow-lg lg:hidden">
             {navLinks.map((l) => (
               <a
                 key={l.key}
                 href={l.href}
                 onClick={() => setMenuOpen(false)}
-                className="block py-2.5 text-sm font-semibold text-ink"
+                className="block rounded-md px-3 py-2.5 text-sm font-semibold text-ink hover:bg-brand-soft hover:text-brand"
               >
                 {t(l.key)}
               </a>
@@ -261,21 +270,28 @@ function Index() {
 
       {/* Hero */}
       <section className="topo relative overflow-hidden">
-        <div className="pointer-events-none absolute -start-16 -top-16 size-40 rounded-full bg-coral" />
-        <div className="pointer-events-none absolute end-24 top-24 size-36 rounded-full bg-sun" />
-        <div className="pointer-events-none absolute -bottom-24 left-1/2 size-56 -translate-x-1/2 rounded-full bg-brand" />
-
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-28 pt-16 lg:grid-cols-2 lg:pb-36">
-          <div>
-            <p className="eyebrow -rotate-3">{heroC["eyebrow"]}</p>
-            <h1 className="mt-4 max-w-xl text-5xl font-extrabold leading-[1.05] text-ink md:text-6xl lg:text-[4.25rem]">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-24 pt-10 md:pt-14 lg:grid-cols-[0.95fr_1.05fr] lg:pb-32">
+          <div className="relative z-10">
+            <p className="eyebrow -rotate-2">{heroC["eyebrow"]}</p>
+            <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-[1.05] text-ink sm:text-5xl md:text-6xl lg:text-[4.35rem]">
               {heroC["title"]}
             </h1>
-            <p className="mt-6 max-w-md text-base text-muted-foreground">{heroC["subtitle"]}</p>
+            <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground md:text-lg">{heroC["subtitle"]}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              {heroServices.map((service) => (
+                <span
+                  key={service.label}
+                  className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-background/80 px-4 py-2 text-sm font-semibold text-ink shadow-sm"
+                >
+                  <service.icon className="size-4 text-brand" />
+                  {t(service.label)}
+                </span>
+              ))}
+            </div>
           </div>
 
           <div className="relative">
-            <div className="blob relative mx-auto aspect-square w-full max-w-xl">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-xl overflow-hidden rounded-[2rem] shadow-[0_35px_90px_-45px_var(--ink)] sm:aspect-[5/4] lg:aspect-[4/5]">
               <img
                 src={hero}
                 alt="Turquoise coastline at golden hour"
@@ -283,14 +299,26 @@ function Index() {
                 height={1088}
                 className="size-full object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-background/5" />
+              <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-background/20 bg-background/88 p-4 shadow-lg backdrop-blur-md sm:inset-x-7 sm:bottom-7 sm:p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-brand">{t("hero.badge")}</p>
+                    <p className="mt-1 text-sm font-extrabold text-ink sm:text-base">{t("hero.badgeText")}</p>
+                  </div>
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-coral text-primary-foreground">
+                    <ShieldCheck className="size-5" />
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Search card */}
-        <div className="relative z-10 mx-auto -mt-16 max-w-5xl px-6 pb-24">
-          <div className="rounded-xl bg-card p-6 shadow-[0_30px_70px_-45px_var(--ink)] md:p-7">
-            <div className="grid gap-6 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+        <div className="relative z-10 mx-auto -mt-12 max-w-6xl px-6 pb-24">
+          <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-[0_35px_90px_-55px_var(--ink)] backdrop-blur md:p-5">
+            <div className="grid gap-3 md:grid-cols-[1.25fr_1.05fr_0.95fr_0.8fr_auto]">
               <Field
                 icon={MapPin}
                 label={t("search.destination")}
@@ -310,9 +338,10 @@ function Index() {
               <button
                 aria-label={t("search.action")}
                 onClick={submitSearch}
-                className="mt-auto flex h-14 items-center justify-center rounded-md bg-coral px-7 text-primary-foreground transition-colors hover:bg-coral-dark"
+                className="mt-auto flex h-14 items-center justify-center gap-2 rounded-xl bg-coral px-6 text-sm font-bold text-primary-foreground shadow-lg shadow-coral/20 transition-colors hover:bg-coral-dark md:px-7"
               >
                 <Search className="size-5" />
+                <span className="md:hidden lg:inline">{t("search.action")}</span>
               </button>
             </div>
           </div>
@@ -324,7 +353,7 @@ function Index() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow -rotate-2">{t("sec.destinations.eyebrow")}</p>
-            <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">{t("sec.destinations.title")}</h2>
+            <h2 className="mt-3 max-w-2xl text-4xl font-extrabold md:text-5xl">{t("sec.destinations.title")}</h2>
           </div>
           <p className="max-w-sm text-sm text-muted-foreground">{t("sec.destinations.text")}</p>
         </div>
@@ -335,7 +364,7 @@ function Index() {
               to="/search"
               search={{ type: "tours" as const, sort: "price_asc" as const, q: d.name }}
               key={d.id}
-              className="card-lift group relative block overflow-hidden rounded-2xl"
+              className="card-lift group relative block overflow-hidden rounded-2xl bg-ink"
             >
               <img
                 src={imageFor(d.image_key)}
@@ -343,15 +372,18 @@ function Index() {
                 loading="lazy"
                 width={800}
                 height={1000}
-                className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-80 w-full object-cover opacity-95 transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-sun">
+                <span className="inline-flex items-center rounded-full bg-background/15 px-3 py-1 text-xs font-semibold text-background backdrop-blur">
                   {L(d.country, d.country_ar)}
+                </span>
+                <h3 className="mt-3 text-2xl font-extrabold text-background">{L(d.name, d.name_ar)}</h3>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-background/75">
+                  <MapPin className="size-3.5 text-sun" />
+                  {d.region}
                 </p>
-                <h3 className="mt-1 text-xl font-bold text-background">{L(d.name, d.name_ar)}</h3>
-                <p className="text-xs text-background/75">{d.region}</p>
               </div>
             </Link>
           ))}
@@ -363,47 +395,51 @@ function Index() {
         <div className="section-pad mx-auto max-w-7xl px-6">
           <div className="text-center">
             <p className="eyebrow -rotate-2">{t("sec.packages.eyebrow")}</p>
-            <h2 className="mt-3 text-4xl font-extrabold md:text-5xl">{t("sec.packages.title")}</h2>
+            <h2 className="mx-auto mt-3 max-w-2xl text-4xl font-extrabold md:text-5xl">{t("sec.packages.title")}</h2>
           </div>
 
           <div className="mt-12 grid gap-7 md:grid-cols-3">
             {packages.map((p) => (
-              <article key={p.id} className="card-lift overflow-hidden rounded-2xl bg-card">
-                <div className="relative">
+              <article key={p.id} className="card-lift overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
+                <div className="relative overflow-hidden">
                   <img
                     src={imageFor(p.image_key)}
                     alt={L(p.title, p.title_ar)}
                     loading="lazy"
                     width={800}
                     height={1000}
-                    className="h-56 w-full object-cover"
+                    className="h-60 w-full object-cover transition-transform duration-700 hover:scale-105"
                   />
-                  <span className="absolute start-4 top-4 rounded-md bg-coral px-3 py-1 text-xs font-semibold text-primary-foreground">
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent" />
+                  <span className="absolute start-4 top-4 rounded-full bg-coral px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-lg">
                     {p.days} {t("card.days")} / {p.nights} {t("card.nights")}
+                  </span>
+                  <span className="absolute bottom-4 end-4 inline-flex items-center gap-1.5 rounded-full bg-background/90 px-3 py-1.5 text-xs font-bold text-ink backdrop-blur">
+                    <Star className="size-3.5 fill-sun text-sun" /> {p.rating}
                   </span>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="size-3.5 text-coral" /> {L(p.place, p.place_ar)}
+                    <MapPin className="size-3.5 text-brand" /> {L(p.place, p.place_ar)}
                   </div>
-                  <h3 className="mt-2 text-lg font-bold leading-snug">{L(p.title, p.title_ar)}</h3>
-                  <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                  <h3 className="mt-2 min-h-14 text-xl font-extrabold leading-snug text-ink">{L(p.title, p.title_ar)}</h3>
+                  <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <User className="size-3.5" /> {p.min_people}-{p.max_people} {t("card.people")}
+                      <User className="size-3.5 text-coral" /> {p.min_people}-{p.max_people} {t("card.people")}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Star className="size-3.5 fill-sun text-sun" /> {p.rating}
+                      <CalendarDays className="size-3.5 text-brand" /> {p.days + p.nights} {t("card.tripLength")}
                     </span>
                   </div>
-                  <div className="mt-5 flex items-center justify-between border-t border-border pt-5">
+                  <div className="mt-6 flex items-end justify-between gap-4 border-t border-border pt-5">
                     <p className="text-sm text-muted-foreground">
-                      {t("card.from")}{" "}
-                      <span className="text-xl font-extrabold text-ink">${Number(p.price).toLocaleString()}</span>
+                      <span className="block text-xs font-bold uppercase tracking-widest text-brand">{t("card.from")}</span>
+                      <span className="text-2xl font-extrabold text-ink">${Number(p.price).toLocaleString()}</span>
                     </p>
                     <Link
                       to="/search"
                       search={{ type: "tours" as const, sort: "price_asc" as const, q: p.place }}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral transition-all hover:gap-2.5"
+                      className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-4 text-sm font-bold text-background transition-colors hover:bg-brand"
                     >
                       {t("search.book")} <ArrowRight className="size-4 rtl:rotate-180" />
                     </Link>
@@ -652,9 +688,9 @@ function Field({
   type?: string;
 }) {
   return (
-    <label className="block">
-      <span className="flex items-center gap-2 text-sm font-bold text-ink">
-        <Icon className="size-4 text-coral" />
+    <label className="block rounded-xl border border-border/80 bg-background px-4 py-3 transition-colors focus-within:border-brand">
+      <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <Icon className="size-4 text-brand" />
         {label}
       </span>
       <input
@@ -662,7 +698,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-3 h-8 w-full border-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        className="mt-2 h-7 w-full border-none bg-transparent text-sm font-semibold text-ink outline-none placeholder:font-medium placeholder:text-muted-foreground"
       />
     </label>
   );

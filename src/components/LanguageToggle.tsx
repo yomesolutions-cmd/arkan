@@ -1,15 +1,17 @@
-import { Languages } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 export function LanguageToggle({ className = "" }: { className?: string }) {
-  const { toggle, t } = useI18n();
+  const { lang, toggle, t } = useI18n();
+  const targetFlag = lang === "ar" ? "🇬🇧" : "🇸🇦";
+
   return (
     <button
       onClick={toggle}
-      className={`inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-coral hover:text-coral ${className}`}
+      aria-label={t("lang.switch")}
+      title={t("lang.switch")}
+      className={`inline-flex size-11 items-center justify-center rounded-full border border-brand/35 bg-brand-soft text-xl leading-none text-brand transition-colors hover:border-brand hover:bg-brand hover:text-primary-foreground ${className}`}
     >
-      <Languages className="size-4" />
-      {t("lang.switch")}
+      <span aria-hidden="true">{targetFlag}</span>
     </button>
   );
 }

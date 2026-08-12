@@ -20,6 +20,16 @@ export const dict = {
   "nav.menu": { ar: "القائمة", en: "Menu" },
   "lang.switch": { ar: "English", en: "العربية" },
 
+  "hero.service.flights": { ar: "طيران", en: "Flights" },
+  "hero.service.hotels": { ar: "فنادق", en: "Hotels" },
+  "hero.service.tours": { ar: "رحلات", en: "Tours" },
+  "hero.service.visa": { ar: "تأشيرات", en: "Visa support" },
+  "hero.badge": { ar: "خدمة موثوقة", en: "Trusted service" },
+  "hero.badgeText": {
+    ar: "حجوزات مريحة من البداية حتى العودة",
+    en: "Smooth bookings from takeoff to return",
+  },
+
   // search widget
   "search.destination": { ar: "الوجهة", en: "Destination" },
   "search.destinationPh": { ar: "إلى أين تريد الذهاب؟", en: "Where are you going?" },
@@ -62,6 +72,8 @@ export const dict = {
   "card.people": { ar: "أشخاص", en: "people" },
   "card.from": { ar: "ابتداءً من", en: "from" },
   "card.perNight": { ar: "لكل ليلة", en: "per night" },
+
+  "card.tripLength": { ar: "أيام رحلة", en: "trip days" },
 
   // newsletter
   "news.success": { ar: "تم الاشتراك! شكراً لك.", en: "Subscribed! Thank you." },
