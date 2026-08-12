@@ -119,7 +119,7 @@ function AuthPage() {
           onClick={onGoogle}
           className="mt-7 flex w-full items-center justify-center gap-3 rounded-md border border-border bg-background px-5 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-muted"
         >
-          <span className="text-base font-bold text-coral">G</span> Continue with Google
+          <span className="text-base font-bold text-brand">G</span> Continue with Google
         </button>
 
         <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
@@ -135,7 +135,7 @@ function AuthPage() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Full name"
               maxLength={120}
-              className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-coral"
+              className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand"
             />
           )}
           <input
@@ -145,7 +145,7 @@ function AuthPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
             maxLength={255}
-            className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-coral"
+            className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand"
           />
           <input
             type="password"
@@ -155,14 +155,14 @@ function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             maxLength={72}
-            className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-coral"
+            className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand"
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
           {message && <p className="text-sm text-accent-foreground">{message}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-coral px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark disabled:opacity-60"
+            className="w-full rounded-md bg-brand px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-dark disabled:opacity-60"
           >
             {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Sign up"}
           </button>
@@ -176,7 +176,7 @@ function AuthPage() {
               setError(null);
               setMessage(null);
             }}
-            className="font-semibold text-coral transition-colors hover:text-coral-dark"
+            className="font-semibold text-brand transition-colors hover:text-brand-dark"
           >
             {mode === "signin" ? "Sign up" : "Sign in"}
           </button>
