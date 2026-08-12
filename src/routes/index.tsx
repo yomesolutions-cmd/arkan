@@ -24,8 +24,6 @@ import {
   Mail,
   Menu,
   X,
-  Plane,
-  Hotel,
   Facebook,
   Instagram,
   Send,
@@ -88,13 +86,6 @@ const features = [
   { icon: ShieldCheck, title: "feat.safe.title", text: "feat.safe.text" },
   { icon: Headphones, title: "feat.support.title", text: "feat.support.text" },
   { icon: Clock, title: "feat.fast.title", text: "feat.fast.text" },
-] as const;
-
-const heroServices = [
-  { icon: Plane, label: "hero.service.flights" },
-  { icon: Hotel, label: "hero.service.hotels" },
-  { icon: Flag, label: "hero.service.tours" },
-  { icon: ShieldCheck, label: "hero.service.visa" },
 ] as const;
 
 function initials(name: string) {
@@ -270,28 +261,21 @@ function Index() {
 
       {/* Hero */}
       <section className="topo relative overflow-hidden">
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-24 pt-10 md:pt-14 lg:grid-cols-[0.95fr_1.05fr] lg:pb-32">
-          <div className="relative z-10">
-            <p className="eyebrow -rotate-2">{heroC["eyebrow"]}</p>
-            <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-[1.05] text-ink sm:text-5xl md:text-6xl lg:text-[4.35rem]">
+        <div className="pointer-events-none absolute -start-16 -top-16 size-40 rounded-full bg-coral" />
+        <div className="pointer-events-none absolute end-24 top-24 size-36 rounded-full bg-sun" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/2 size-56 -translate-x-1/2 rounded-full bg-brand" />
+
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-28 pt-16 lg:grid-cols-2 lg:pb-36">
+          <div>
+            <p className="eyebrow -rotate-3">{heroC["eyebrow"]}</p>
+            <h1 className="mt-4 max-w-xl text-5xl font-extrabold leading-[1.05] text-ink md:text-6xl lg:text-[4.25rem]">
               {heroC["title"]}
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground md:text-lg">{heroC["subtitle"]}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              {heroServices.map((service) => (
-                <span
-                  key={service.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-background/80 px-4 py-2 text-sm font-semibold text-ink shadow-sm"
-                >
-                  <service.icon className="size-4 text-brand" />
-                  {t(service.label)}
-                </span>
-              ))}
-            </div>
+            <p className="mt-6 max-w-md text-base text-muted-foreground">{heroC["subtitle"]}</p>
           </div>
 
           <div className="relative">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-xl overflow-hidden rounded-[2rem] shadow-[0_35px_90px_-45px_var(--ink)] sm:aspect-[5/4] lg:aspect-[4/5]">
+            <div className="blob relative mx-auto aspect-square w-full max-w-xl">
               <img
                 src={hero}
                 alt="Turquoise coastline at golden hour"
@@ -299,26 +283,14 @@ function Index() {
                 height={1088}
                 className="size-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-background/5" />
-              <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-background/20 bg-background/88 p-4 shadow-lg backdrop-blur-md sm:inset-x-7 sm:bottom-7 sm:p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-brand">{t("hero.badge")}</p>
-                    <p className="mt-1 text-sm font-extrabold text-ink sm:text-base">{t("hero.badgeText")}</p>
-                  </div>
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-coral text-primary-foreground">
-                    <ShieldCheck className="size-5" />
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Search card */}
-        <div className="relative z-10 mx-auto -mt-12 max-w-6xl px-6 pb-24">
-          <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-[0_35px_90px_-55px_var(--ink)] backdrop-blur md:p-5">
-            <div className="grid gap-3 md:grid-cols-[1.25fr_1.05fr_0.95fr_0.8fr_auto]">
+        <div className="relative z-10 mx-auto -mt-16 max-w-5xl px-6 pb-24">
+          <div className="rounded-xl bg-card p-6 shadow-[0_30px_70px_-45px_var(--ink)] md:p-7">
+            <div className="grid gap-6 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
               <Field
                 icon={MapPin}
                 label={t("search.destination")}
@@ -338,10 +310,9 @@ function Index() {
               <button
                 aria-label={t("search.action")}
                 onClick={submitSearch}
-                className="mt-auto flex h-14 items-center justify-center gap-2 rounded-xl bg-coral px-6 text-sm font-bold text-primary-foreground shadow-lg shadow-coral/20 transition-colors hover:bg-coral-dark md:px-7"
+                className="mt-auto flex h-14 items-center justify-center rounded-md bg-coral px-7 text-primary-foreground transition-colors hover:bg-coral-dark"
               >
                 <Search className="size-5" />
-                <span className="md:hidden lg:inline">{t("search.action")}</span>
               </button>
             </div>
           </div>
