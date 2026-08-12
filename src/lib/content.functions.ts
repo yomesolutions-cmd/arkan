@@ -26,8 +26,16 @@ export type Testimonial = {
 };
 
 const CONTENT_COLS = "id, section, data_en, data_ar";
+const TESTIMONIAL_COLS_BASE =
+  "id, name_en, name_ar, role_en, role_ar, quote_en, quote_ar, rating, sort_order, is_active";
 const TESTIMONIAL_COLS =
   "id, name_en, name_ar, image_url, role_en, role_ar, quote_en, quote_ar, rating, sort_order, is_active";
+
+type TestimonialWithoutImage = Omit<Testimonial, "image_url">;
+
+function withDefaultImageUrl(rows: TestimonialWithoutImage[]): Testimonial[] {
+  return rows.map((row) => ({ ...row, image_url: null }));
+}
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -48,17 +56,30 @@ function publicClient() {
 
 export const getSiteContent = createServerFn({ method: "GET" }).handler(async () => {
   const supabase = publicClient();
-  const [content, testimonials] = await Promise.all([
-    supabase.from("site_content").select(CONTENT_COLS),
-    supabase.from("testimonials").select(TESTIMONIAL_COLS).eq("is_active", true).order("sort_order"),
-  ]);
+  const content = await supabase.from("site_content").select(CONTENT_COLS);
+  let testimonialRows: Testimonial[] = [];
+  const testimonials = await supabase
+    .from("testimonials")
+    .select(TESTIMONIAL_COLS)
+    .eq("is_active", true)
+    .order("sort_order");
   if (content.error) throw content.error;
-  if (testimonials.error) throw testimonials.error;
+  if (testimonials.error) {
+    const fallback = await supabase
+      .from("testimonials")
+      .select(TESTIMONIAL_COLS_BASE)
+      .eq("is_active", true)
+      .order("sort_order");
+    if (fallback.error) throw fallback.error;
+    testimonialRows = withDefaultImageUrl((fallback.data ?? []) as TestimonialWithoutImage[]);
+  } else {
+    testimonialRows = (testimonials.data ?? []) as Testimonial[];
+  }
   const sections: Record<string, { en: Record<string, string>; ar: Record<string, string> }> = {};
   for (const row of (content.data ?? []) as SiteContentRow[]) {
     sections[row.section] = { en: row.data_en ?? {}, ar: row.data_ar ?? {} };
   }
-  return { sections, testimonials: (testimonials.data ?? []) as Testimonial[] };
+  return { sections, testimonials: testimonialRows };
 });
 
 export const subscribeEmail = createServerFn({ method: "POST" })
@@ -135,7 +156,11 @@ export const listTestimonials = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.from("testimonials").select(TESTIMONIAL_COLS).order("sort_order");
-    if (error) throw error;
+    if (error) {
+      const fallback = await context.supabase.from("testimonials").select(TESTIMONIAL_COLS_BASE).order("sort_order");
+      if (fallback.error) throw fallback.error;
+      return withDefaultImageUrl((fallback.data ?? []) as TestimonialWithoutImage[]);
+    }
     return (data ?? []) as Testimonial[];
   });
 
@@ -162,6 +187,15 @@ export const saveTestimonial = createServerFn({ method: "POST" })
       ? context.supabase.from("testimonials").update(rest).eq("id", id)
       : context.supabase.from("testimonials").insert(rest);
     const { error } = await q;
+    if (error && error.message.toLowerCase().includes("image_url")) {
+      const { image_url, ...withoutImageUrl } = rest;
+      const fallback = id
+        ? context.supabase.from("testimonials").update(withoutImageUrl).eq("id", id)
+        : context.supabase.from("testimonials").insert(withoutImageUrl);
+      const { error: fallbackError } = await fallback;
+      if (fallbackError) throw fallbackError;
+      return { ok: true };
+    }
     if (error) throw error;
     return { ok: true };
   });
