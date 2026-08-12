@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { CalendarDays, Users, Plane, Hotel, Map, Trash2, XCircle } from "lucide-react";
+import { CalendarDays, Users, Plane, Hotel, Map, Trash2, XCircle, UserRound, LogOut, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { listMyBookings, updateBooking, deleteBooking } from "@/lib/bookings.functions";
 import logo from "@/assets/arkan-logo.png.asset.json";
@@ -31,6 +31,7 @@ function Dashboard() {
   const patch = useServerFn(updateBooking);
   const remove = useServerFn(deleteBooking);
   const [email, setEmail] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "pending" | "confirmed" | "cancelled">("all");
 
   useEffect(() => {
@@ -63,6 +64,7 @@ function Dashboard() {
   const spend = bookings
     .filter((b) => b.status !== "cancelled")
     .reduce((s, b) => s + Number(b.total_price), 0);
+  const accountInitial = (email?.trim()[0] ?? "A").toUpperCase();
 
   return (
     <div className="min-h-screen bg-background">
@@ -78,10 +80,45 @@ function Dashboard() {
             <Link to="/amin" className="font-medium text-ink hover:text-coral">
               Admin
             </Link>
-            <span className="hidden text-muted-foreground sm:inline">{email}</span>
-            <button onClick={signOut} className="rounded-md border border-border px-4 py-2 font-semibold hover:bg-muted">
-              Sign out
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setAccountOpen((v) => !v)}
+                aria-label="Open account menu"
+                aria-expanded={accountOpen}
+                className="flex size-11 items-center justify-center rounded-full border border-brand/25 bg-brand-soft text-sm font-extrabold text-brand shadow-sm transition-colors hover:border-brand hover:bg-brand hover:text-primary-foreground"
+              >
+                {email ? accountInitial : <UserRound className="size-5" />}
+              </button>
+              {accountOpen && (
+                <div className="absolute end-0 top-14 z-50 w-72 rounded-2xl border border-border bg-card p-3 text-start shadow-[0_24px_70px_-45px_var(--ink)]">
+                  <div className="flex items-center gap-3 rounded-xl bg-mint p-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-primary-foreground">
+                      {accountInitial}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold uppercase tracking-widest text-brand">Signed in as</p>
+                      <p className="mt-1 truncate text-sm font-semibold text-ink">{email ?? "Your account"}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                      <Mail className="size-3.5 shrink-0 text-brand" />
+                      <span className="truncate">{email ?? "Account email"}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={signOut}
+                      aria-label="Sign out"
+                      title="Sign out"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-coral text-primary-foreground transition-colors hover:bg-coral-dark"
+                    >
+                      <LogOut className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
