@@ -15,6 +15,8 @@ import { ChatBox } from "@/components/ChatBox";
 import { CustomCursor } from "@/components/CustomCursor";
 import { LanguageProvider } from "@/lib/i18n";
 
+const publicBase = import.meta.env.BASE_URL;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -95,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&display=swap",
       },
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "icon", type: "image/png", href: `${publicBase}favicon.png` },
     ],
   }),
 

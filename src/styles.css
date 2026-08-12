@@ -178,7 +178,7 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 800;
-    letter-spacing: -0.035em;
+    letter-spacing: 0;
   }
   [dir="rtl"] body,
   [dir="rtl"] h1,
@@ -226,10 +226,10 @@
   background-color: var(--mint);
   background-image: radial-gradient(
       circle at 20% 30%,
-      color-mix(in oklab, var(--brand) 8%, transparent) 0 1px,
+      color-mix(in oklab, var(--brand) 10%, transparent) 0 1px,
       transparent 1px
     );
-  background-size: 26px 26px;
+  background-size: 28px 28px;
 }
 
 @utility card-lift {

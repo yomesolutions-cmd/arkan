@@ -23,19 +23,20 @@ import { SubscribersTab, ChatLogsTab, UsersTab } from "@/components/admin/ListsT
 import { OverviewTab } from "@/components/admin/OverviewTab";
 import { CalendarTab } from "@/components/admin/CalendarTab";
 import { PassportAlertsTab } from "@/components/admin/PassportAlertsTab";
-import logo from "@/assets/arkan-logo.png.asset.json";
 import { getPublicUrl } from "@/lib/domains";
+
+const logoUrl = `${import.meta.env.BASE_URL}arkan-logo.png`;
 
 export const Route = createFileRoute("/amin")({
   head: () => ({
     meta: [
-      { title: "Control panel — Arkan Travel admin" },
+      { title: "Control panel - Arkan Travel admin" },
       {
         name: "description",
         content:
           "Manage Arkan Travel page content, testimonials, trips, hotels, flights, subscribers, chat questions and users in Arabic and English.",
       },
-      { property: "og:title", content: "Control panel — Arkan Travel admin" },
+      { property: "og:title", content: "Control panel - Arkan Travel admin" },
       {
         property: "og:description",
         content: "Bilingual control panel for Arkan Travel content, catalog and customers.",
@@ -75,7 +76,7 @@ function AdminPage() {
         className={`${navOpen ? "block" : "hidden"} shrink-0 bg-ink p-4 text-background lg:block lg:w-64`}
       >
         <a href={getPublicUrl("/")} className="flex items-center gap-2 rounded-xl bg-background/10 p-3">
-          <img src={logo.url} alt="Arkan Travel logo" className="h-9 w-auto" width={120} height={120} />
+          <img src={logoUrl} alt="Arkan Travel logo" className="h-9 w-auto" width={120} height={120} />
         </a>
         <nav className="mt-6 space-y-1">
           {TABS.map((tb) => (
