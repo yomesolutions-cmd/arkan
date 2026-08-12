@@ -193,22 +193,15 @@ function Index() {
                 </Link>
               </>
             ) : (
-              <>
-                <Link
-                  to="/auth"
-                  search={{ redirect: "/dashboard" }}
-                  className="hidden text-[0.95rem] font-medium text-ink hover:text-coral md:inline"
-                >
-                  {t("nav.login")}
-                </Link>
-                <Link
-                  to="/auth"
-                  search={{ redirect: "/dashboard" }}
-                  className="hidden rounded-md bg-coral px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
-                >
-                  {t("nav.signup")}
-                </Link>
-              </>
+              <Link
+                to="/auth"
+                search={{ redirect: "/dashboard" }}
+                aria-label={t("nav.login")}
+                title={t("nav.login")}
+                className="hidden size-11 items-center justify-center rounded-full bg-coral text-primary-foreground transition-colors hover:bg-coral-dark sm:inline-flex"
+              >
+                <User className="size-5" />
+              </Link>
             )}
             <button
               aria-label={t("nav.menu")}
@@ -238,6 +231,17 @@ function Index() {
                 className="block py-2.5 text-sm font-semibold text-ink"
               >
                 {t("nav.admin")}
+              </Link>
+            )}
+            {!signedIn && (
+              <Link
+                to="/auth"
+                search={{ redirect: "/dashboard" }}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 py-2.5 text-sm font-semibold text-ink"
+              >
+                <User className="size-4 text-coral" />
+                {t("nav.login")}
               </Link>
             )}
           </nav>

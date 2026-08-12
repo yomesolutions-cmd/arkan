@@ -10,11 +10,11 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in or create an account — Arkan Travel" },
+      { title: "Sign in — Arkan Travel" },
       {
         name: "description",
         content:
-          "Sign in to Arkan Travel to book flights, hotels and tours and manage all your reservations in one dashboard.",
+          "Sign in to Arkan Travel to manage all your reservations in one dashboard.",
       },
       { property: "og:title", content: "Sign in — Arkan Travel" },
       { property: "og:description", content: "Access your Arkan Travel bookings dashboard." },
@@ -32,10 +32,8 @@ function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const dest = safePath(search.redirect);
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,26 +50,12 @@ function AuthPage() {
     setMessage(null);
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { data, error: err } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName.trim() },
-          },
-        });
-        if (err) throw err;
-        if (data.session) navigate({ to: dest, replace: true });
-        else setMessage("Check your inbox to confirm your email, then sign in.");
-      } else {
-        const { error: err } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (err) throw err;
-        navigate({ to: dest, replace: true });
-      }
+      const { error: err } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (err) throw err;
+      navigate({ to: dest, replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -104,9 +88,7 @@ function AuthPage() {
           <img src={logo.url} alt="Arkan Travel logo" className="h-14 w-auto" width={160} height={160} />
         </Link>
         <p className="eyebrow mt-5 -rotate-2 text-center">Welcome</p>
-        <h1 className="mt-2 text-center text-3xl font-extrabold text-ink">
-          {mode === "signin" ? "Sign in to your trips" : "Create your account"}
-        </h1>
+        <h1 className="mt-2 text-center text-3xl font-extrabold text-ink">Sign in to your trips</h1>
 
         <button
           onClick={onGoogle}
@@ -120,15 +102,6 @@ function AuthPage() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
-          {mode === "signup" && (
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Full name"
-              maxLength={100}
-              className="w-full rounded-md border border-border bg-background px-4 py-3 text-sm outline-none focus:border-coral"
-            />
-          )}
           <input
             type="email"
             required
@@ -155,23 +128,9 @@ function AuthPage() {
             disabled={loading}
             className="w-full rounded-md bg-coral px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-coral-dark disabled:opacity-60"
           >
-            {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {loading ? "Please wait…" : "Sign in"}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? "New to Arkan Travel?" : "Already have an account?"}{" "}
-          <button
-            onClick={() => {
-              setMode(mode === "signin" ? "signup" : "signin");
-              setError(null);
-              setMessage(null);
-            }}
-            className="font-semibold text-coral"
-          >
-            {mode === "signin" ? "Create an account" : "Sign in"}
-          </button>
-        </p>
       </div>
     </div>
   );
