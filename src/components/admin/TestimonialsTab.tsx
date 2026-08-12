@@ -14,6 +14,7 @@ const blank: Testimonial = {
   id: "",
   name_en: "",
   name_ar: "",
+  image_url: "",
   role_en: "",
   role_ar: "",
   quote_en: "",
@@ -90,6 +91,12 @@ function Row({
       <div className="grid gap-3 md:grid-cols-2">
         <Text label={`${t("admin.english")} — name`} dir="ltr" value={form.name_en} onChange={(v) => set("name_en", v)} />
         <Text label={`${t("admin.arabic")} — الاسم`} dir="rtl" value={form.name_ar} onChange={(v) => set("name_ar", v)} />
+        <Text
+          label="Image URL"
+          dir="ltr"
+          value={form.image_url ?? ""}
+          onChange={(v) => set("image_url", v)}
+        />
         <Text label={`${t("admin.english")} — role`} dir="ltr" value={form.role_en} onChange={(v) => set("role_en", v)} />
         <Text label={`${t("admin.arabic")} — الصفة`} dir="rtl" value={form.role_ar} onChange={(v) => set("role_ar", v)} />
         <Area label={`${t("admin.english")} — quote`} dir="ltr" value={form.quote_en} onChange={(v) => set("quote_en", v)} />

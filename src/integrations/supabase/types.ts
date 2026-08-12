@@ -368,6 +368,7 @@ export type Database = {
           answer_ar: string | null
           created_at: string
           id: string
+          image_url: string | null
           is_active: boolean
           label: string
           label_ar: string
@@ -380,6 +381,7 @@ export type Database = {
           answer_ar?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           label: string
           label_ar?: string
@@ -392,6 +394,7 @@ export type Database = {
           answer_ar?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           label?: string
           label_ar?: string

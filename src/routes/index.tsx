@@ -88,11 +88,10 @@ const features = [
   { icon: Clock, title: "feat.fast.title", text: "feat.fast.text" },
 ] as const;
 
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  const first = parts[0]?.[0] ?? "A";
-  const second = parts.length > 1 ? parts[parts.length - 1]?.[0] : parts[0]?.[1];
-  return `${first}${second ?? ""}`.toUpperCase();
+const DEFAULT_TESTIMONIAL_IMAGE = "/testimonials/default-avatar.svg";
+
+function testimonialImage(imageUrl: string | null | undefined) {
+  return imageUrl?.trim() || DEFAULT_TESTIMONIAL_IMAGE;
 }
 
 function Index() {
@@ -192,17 +191,7 @@ function Index() {
           <div className="flex items-center gap-3 md:gap-4">
             <LanguageToggle />
             {signedIn ? (
-              <>
-                <Link to="/amin" className="hidden text-[0.95rem] font-semibold text-ink hover:text-brand md:inline">
-                  {t("nav.admin")}
-                </Link>
-                <Link
-                  to="/dashboard"
-                  className="hidden rounded-full bg-coral px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-coral/20 transition-colors hover:bg-coral-dark sm:inline-flex"
-                >
-                  {t("nav.myBookings")}
-                </Link>
-              </>
+              null
             ) : (
               <Link
                 to="/auth"
@@ -235,15 +224,6 @@ function Index() {
                 {t(l.key)}
               </a>
             ))}
-            {signedIn && (
-              <Link
-                to="/amin"
-                onClick={() => setMenuOpen(false)}
-                className="block py-2.5 text-sm font-semibold text-ink"
-              >
-                {t("nav.admin")}
-              </Link>
-            )}
             {!signedIn && (
               <Link
                 to="/auth"
@@ -500,7 +480,14 @@ function Index() {
                   aria-label={`Show review from ${name}`}
                   className={`testimonial-avatar testimonial-avatar-${i} ${active ? "is-active" : ""}`}
                 >
-                  <span className="testimonial-avatar-inner">{initials(name)}</span>
+                  <img
+                    src={testimonialImage(tm.image_url)}
+                    alt={name}
+                    className="testimonial-avatar-image"
+                    onError={(event) => {
+                      event.currentTarget.src = DEFAULT_TESTIMONIAL_IMAGE;
+                    }}
+                  />
                 </button>
               );
             })}
@@ -510,9 +497,14 @@ function Index() {
                 {L(activeTestimonial.quote_en, activeTestimonial.quote_ar)}
               </blockquote>
               <figcaption className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <span className="flex size-20 items-center justify-center rounded-full bg-sun text-xl font-extrabold text-ink shadow-lg ring-4 ring-background">
-                  {initials(L(activeTestimonial.name_en, activeTestimonial.name_ar))}
-                </span>
+                <img
+                  src={testimonialImage(activeTestimonial.image_url)}
+                  alt={L(activeTestimonial.name_en, activeTestimonial.name_ar)}
+                  className="size-20 rounded-full object-cover shadow-lg ring-4 ring-background"
+                  onError={(event) => {
+                    event.currentTarget.src = DEFAULT_TESTIMONIAL_IMAGE;
+                  }}
+                />
                 <span className="text-center sm:text-start">
                   <span className="block text-base font-extrabold text-ink">
                     {L(activeTestimonial.name_en, activeTestimonial.name_ar)}

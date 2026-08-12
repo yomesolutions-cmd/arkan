@@ -15,6 +15,7 @@ export type Testimonial = {
   id: string;
   name_en: string;
   name_ar: string;
+  image_url: string | null;
   role_en: string;
   role_ar: string;
   quote_en: string;
@@ -26,7 +27,7 @@ export type Testimonial = {
 
 const CONTENT_COLS = "id, section, data_en, data_ar";
 const TESTIMONIAL_COLS =
-  "id, name_en, name_ar, role_en, role_ar, quote_en, quote_ar, rating, sort_order, is_active";
+  "id, name_en, name_ar, image_url, role_en, role_ar, quote_en, quote_ar, rating, sort_order, is_active";
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -142,6 +143,7 @@ const testimonialInput = z.object({
   id: z.string().uuid().optional(),
   name_en: z.string().trim().min(1).max(120),
   name_ar: z.string().trim().max(120).default(""),
+  image_url: z.string().trim().url().max(1000).nullable().optional().or(z.literal("")),
   role_en: z.string().trim().max(160).default(""),
   role_ar: z.string().trim().max(160).default(""),
   quote_en: z.string().trim().min(1).max(1200),
@@ -155,7 +157,7 @@ export const saveTestimonial = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => testimonialInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { id, ...rest } = data;
+    const { id, ...rest } = { ...data, image_url: data.image_url || null };
     const q = id
       ? context.supabase.from("testimonials").update(rest).eq("id", id)
       : context.supabase.from("testimonials").insert(rest);

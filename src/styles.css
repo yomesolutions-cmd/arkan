@@ -367,17 +367,12 @@
       box-shadow 0.22s ease;
   }
 
-  .testimonial-avatar-inner {
-    display: flex;
+  .testimonial-avatar-image {
+    display: block;
     width: 3.15rem;
     height: 3.15rem;
-    align-items: center;
-    justify-content: center;
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--brand), var(--sun));
-    color: var(--ink);
-    font-size: 0.9rem;
-    font-weight: 800;
+    object-fit: cover;
   }
 
   .testimonial-avatar:hover,
@@ -386,9 +381,9 @@
     box-shadow: 0 26px 55px -30px var(--ink);
   }
 
-  .testimonial-avatar.is-active .testimonial-avatar-inner {
-    background: linear-gradient(135deg, var(--coral), var(--sun));
-    color: var(--primary-foreground);
+  .testimonial-avatar.is-active .testimonial-avatar-image {
+    outline: 3px solid var(--coral);
+    outline-offset: 3px;
   }
 
   @media (min-width: 768px) {
