@@ -86,7 +86,7 @@ function AdminPage() {
                 setNavOpen(false);
               }}
               className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === tb.id ? "bg-coral text-primary-foreground" : "text-background/70 hover:bg-background/10"
+                tab === tb.id ? "bg-brand text-primary-foreground" : "text-background/70 hover:bg-background/10"
               }`}
             >
               <tb.icon className="size-4" />
@@ -114,7 +114,7 @@ function AdminPage() {
                 <Menu className="size-4" />
               </button>
               <h1 className="text-xl font-extrabold text-ink">
-                {t("admin.title")} <span className="text-coral">{active.label}</span>
+                {t("admin.title")} <span className="text-brand">{active.label}</span>
               </h1>
             </div>
             <LanguageToggle />

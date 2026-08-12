@@ -90,7 +90,7 @@ export function QuestionsTab() {
           placeholder="الموضوع الرئيسي (AR)"
           className="min-w-48 flex-1 rounded-md border border-border bg-card px-4 py-3 text-sm"
         />
-        <button className="flex items-center gap-2 rounded-md bg-coral px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-coral-dark">
+        <button className="flex items-center gap-2 rounded-md bg-brand px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-brand-dark">
           <Plus className="size-4" /> {t("admin.add")}
         </button>
       </form>
@@ -238,7 +238,7 @@ function NodeRow({
             placeholder="سؤال فرعي (AR)"
             className="min-w-36 flex-1 rounded-md border border-border bg-background px-3 py-2 text-xs"
           />
-          <button className="flex items-center gap-1.5 rounded-md border border-coral px-3 py-2 text-xs font-semibold text-coral hover:bg-coral hover:text-primary-foreground">
+          <button className="flex items-center gap-1.5 rounded-md border border-brand px-3 py-2 text-xs font-semibold text-brand hover:bg-brand hover:text-primary-foreground">
             <Plus className="size-3.5" /> Sub
           </button>
         </form>

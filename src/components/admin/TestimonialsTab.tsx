@@ -49,7 +49,7 @@ export function TestimonialsTab() {
     <div className="space-y-4">
       <button
         onClick={() => setCreating((c) => !c)}
-        className="flex items-center gap-1.5 rounded-md bg-coral px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-coral-dark"
+        className="flex items-center gap-1.5 rounded-md bg-brand px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-brand-dark"
       >
         <Plus className="size-3.5" /> {t("admin.add")}
       </button>

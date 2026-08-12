@@ -18,7 +18,7 @@ import {
 import { Users, CalendarCheck, DollarSign, MessageSquare } from "lucide-react";
 import { getAdminStats } from "@/lib/appointments.functions";
 
-const PIE_COLORS = ["var(--color-coral)", "var(--color-sun)", "var(--color-ink)"];
+const PIE_COLORS = ["var(--color-brand)", "var(--color-sun)", "var(--color-ink)"];
 
 function StatCard({
   label,
@@ -59,7 +59,7 @@ export function OverviewTab() {
           label="Total bookings"
           value={String(t.bookings)}
           icon={CalendarCheck}
-          tone="bg-coral text-primary-foreground"
+          tone="bg-brand text-primary-foreground"
         />
         <StatCard label="Value booked" value={`$${t.revenue.toLocaleString()}`} icon={DollarSign} tone="bg-mint text-ink" />
         <StatCard label="Chat interactions" value={String(t.chats)} icon={MessageSquare} tone="bg-sun/60 text-ink" />
@@ -91,7 +91,7 @@ export function OverviewTab() {
                 <Tooltip />
                 <Legend />
                 <Line type="monotone" dataKey="users" stroke="var(--color-ink)" strokeWidth={2} />
-                <Line type="monotone" dataKey="bookings" stroke="var(--color-coral)" strokeWidth={2} />
+                <Line type="monotone" dataKey="bookings" stroke="var(--color-brand)" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -127,7 +127,7 @@ export function OverviewTab() {
                 <XAxis dataKey="name" fontSize={11} stroke="var(--color-muted-foreground)" />
                 <YAxis allowDecimals={false} fontSize={12} stroke="var(--color-muted-foreground)" />
                 <Tooltip />
-                <Bar dataKey="value" fill="var(--color-coral)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="value" fill="var(--color-brand)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

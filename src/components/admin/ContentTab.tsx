@@ -97,7 +97,7 @@ function SectionEditor({ row }: { row: SiteContentRow }) {
             placeholder="new_field_key"
             className="rounded-md border border-border bg-background px-3 py-2 text-xs"
           />
-          <button className="flex items-center gap-1.5 rounded-md border border-coral px-3 py-2 text-xs font-semibold text-coral hover:bg-coral hover:text-primary-foreground">
+          <button className="flex items-center gap-1.5 rounded-md border border-brand px-3 py-2 text-xs font-semibold text-brand hover:bg-brand hover:text-primary-foreground">
             <Plus className="size-3.5" /> {t("admin.add")}
           </button>
         </form>

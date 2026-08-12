@@ -134,7 +134,7 @@ export function CalendarTab() {
                   setForm((f) => ({ ...f, date: key }));
                 }}
                 className={`min-h-20 rounded-lg border p-1.5 text-start transition-colors ${
-                  isSel ? "border-coral bg-coral/10" : "border-border hover:bg-muted"
+                  isSel ? "border-brand bg-brand/10" : "border-border hover:bg-muted"
                 }`}
               >
                 <span className="text-xs font-bold text-ink">{d.getDate()}</span>
@@ -142,7 +142,7 @@ export function CalendarTab() {
                   {items.slice(0, 2).map((a) => (
                     <span
                       key={a.id}
-                      className="block truncate rounded bg-coral px-1 py-0.5 text-[0.6rem] text-primary-foreground"
+                      className="block truncate rounded bg-brand px-1 py-0.5 text-[0.6rem] text-primary-foreground"
                     >
                       {new Date(a.starts_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} {a.title}
                     </span>
@@ -285,7 +285,7 @@ export function CalendarTab() {
           <button
             type="submit"
             disabled={saveM.isPending}
-            className="flex-1 rounded-md bg-coral px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-coral-dark"
+            className="flex-1 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-brand-dark"
           >
             {form.id ? "Save changes" : "Add to calendar"}
           </button>

@@ -154,7 +154,7 @@ export function CatalogTab() {
 
       <button
         onClick={() => setCreating((c) => !c)}
-        className="flex items-center gap-1.5 rounded-md bg-coral px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-coral-dark"
+        className="flex items-center gap-1.5 rounded-md bg-brand px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-brand-dark"
       >
         <Plus className="size-3.5" /> {t("admin.add")}
       </button>
@@ -230,7 +230,7 @@ function ItemForm({
                 type="checkbox"
                 checked={Boolean(form[f.key])}
                 onChange={(e) => set(f.key, e.target.checked)}
-                className="mt-2 size-4 accent-[var(--coral)]"
+                className="mt-2 size-4 accent-[var(--brand)]"
               />
             ) : (
               <input

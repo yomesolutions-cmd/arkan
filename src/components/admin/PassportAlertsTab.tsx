@@ -48,7 +48,7 @@ function statusFor(alert: PassportAlert) {
   const days = daysUntil(alert.expires_on);
   if (days < 0) return { label: "Expired", className: "bg-destructive/10 text-destructive" };
   if (alert.sms_sent_at) return { label: "SMS sent", className: "bg-mint text-ink" };
-  if (days <= alert.reminder_days_before) return { label: "Send SMS", className: "bg-coral text-primary-foreground" };
+  if (days <= alert.reminder_days_before) return { label: "Send SMS", className: "bg-brand text-primary-foreground" };
   return { label: `${days} days left`, className: "bg-muted text-muted-foreground" };
 }
 
@@ -276,7 +276,7 @@ export function PassportAlertsTab() {
           <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
             <label className="flex cursor-pointer items-center justify-between gap-3 rounded-md bg-background px-3 py-2 text-sm font-semibold text-ink hover:bg-muted">
               <span className="flex items-center gap-2 truncate">
-                <ImageUp className="size-4 text-coral" />
+                <ImageUp className="size-4 text-brand" />
                 <span className="truncate">{imageName || "Upload passport image"}</span>
               </span>
               <input
@@ -395,7 +395,7 @@ export function PassportAlertsTab() {
             <button
               type="submit"
               disabled={saveM.isPending}
-              className="flex-1 rounded-md bg-coral px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-coral-dark"
+              className="flex-1 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-brand-dark"
             >
               {form.id ? "Save changes" : "Save alert"}
             </button>
