@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { CalendarDays, Users, Plane, Hotel, Map, Trash2, XCircle, UserRound, LogOut, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { listMyBookings, updateBooking, deleteBooking } from "@/lib/bookings.functions";
+import { useI18n, type TKey } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import logo from "@/assets/arkan-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -23,8 +25,14 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const typeIcon = { flight: Plane, hotel: Hotel, tour: Map } as const;
+const statusKey = {
+  pending: "status.pending",
+  confirmed: "status.confirmed",
+  cancelled: "status.cancelled",
+} as const satisfies Record<"pending" | "confirmed" | "cancelled", TKey>;
 
 function Dashboard() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const fetchBookings = useServerFn(listMyBookings);
@@ -75,13 +83,14 @@ function Dashboard() {
           </Link>
           <div className="flex items-center gap-4 text-sm">
             <Link to="/search" search={{ type: "tours" }} className="font-medium text-ink hover:text-coral">
-              Search trips
+              {t("dash.searchTrips")}
             </Link>
+            <LanguageToggle />
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setAccountOpen((v) => !v)}
-                aria-label="Open account menu"
+                aria-label={t("dash.openAccountMenu")}
                 aria-expanded={accountOpen}
                 className="flex size-11 items-center justify-center rounded-full border border-brand/25 bg-brand-soft text-sm font-extrabold text-brand shadow-sm transition-colors hover:border-brand hover:bg-brand hover:text-primary-foreground"
               >
@@ -94,20 +103,20 @@ function Dashboard() {
                       {accountInitial}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-widest text-brand">Signed in as</p>
-                      <p className="mt-1 truncate text-sm font-semibold text-ink">{email ?? "Your account"}</p>
+                      <p className="text-xs font-bold text-brand">{t("dash.signedInAs")}</p>
+                      <p className="mt-1 truncate text-sm font-semibold text-ink">{email ?? t("dash.yourAccount")}</p>
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
                       <Mail className="size-3.5 shrink-0 text-brand" />
-                      <span className="truncate">{email ?? "Account email"}</span>
+                      <span className="truncate">{email ?? t("dash.accountEmail")}</span>
                     </span>
                     <button
                       type="button"
                       onClick={signOut}
-                      aria-label="Sign out"
-                      title="Sign out"
+                      aria-label={t("common.signout")}
+                      title={t("common.signout")}
                       className="flex size-10 shrink-0 items-center justify-center rounded-full bg-coral text-primary-foreground transition-colors hover:bg-coral-dark"
                     >
                       <LogOut className="size-4" />
@@ -121,14 +130,14 @@ function Dashboard() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        <p className="eyebrow -rotate-2">Your account</p>
-        <h1 className="mt-2 text-4xl font-extrabold text-ink">My bookings</h1>
+        <p className="eyebrow -rotate-2">{t("dash.eyebrow")}</p>
+        <h1 className="mt-2 text-4xl font-extrabold text-ink">{t("dash.title")}</h1>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
-            ["Active bookings", String(upcoming)],
-            ["Total bookings", String(bookings.length)],
-            ["Value booked", `$${spend.toLocaleString()}`],
+            [t("dash.activeBookings"), String(upcoming)],
+            [t("dash.totalBookings"), String(bookings.length)],
+            [t("dash.valueBooked"), `$${spend.toLocaleString()}`],
           ].map(([l, v]) => (
             <div key={l} className="rounded-2xl bg-mint p-6">
               <p className="text-3xl font-extrabold text-ink">{v}</p>
@@ -142,26 +151,26 @@ function Dashboard() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition-colors ${
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
                 filter === f ? "bg-coral text-primary-foreground" : "bg-muted text-ink hover:bg-accent"
               }`}
             >
-              {f}
+              {f === "all" ? t("dash.filterAll") : t(statusKey[f])}
             </button>
           ))}
         </div>
 
         <div className="mt-6 space-y-4">
-          {isLoading && <p className="text-sm text-muted-foreground">Loading your bookings…</p>}
+          {isLoading && <p className="text-sm text-muted-foreground">{t("dash.loading")}</p>}
           {!isLoading && visible.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-              <p className="text-sm text-muted-foreground">No bookings here yet.</p>
+              <p className="text-sm text-muted-foreground">{t("dash.emptyFiltered")}</p>
               <Link
                 to="/search"
                 search={{ type: "tours" }}
                 className="mt-4 inline-flex rounded-md bg-coral px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-coral-dark"
               >
-                Find a trip
+                {t("dash.findTrip")}
               </Link>
             </div>
           )}
@@ -180,10 +189,10 @@ function Dashboard() {
                   <p className="text-xs text-muted-foreground">{b.subtitle}</p>
                   <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <CalendarDays className="size-3.5" /> {b.travel_date ?? "Dates flexible"}
+                      <CalendarDays className="size-3.5" /> {b.travel_date ?? t("dash.datesFlexible")}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Users className="size-3.5" /> {b.guests} guest{b.guests > 1 ? "s" : ""}
+                      <Users className="size-3.5" /> {b.guests} {b.guests > 1 ? t("dash.guests") : t("dash.guest")}
                     </span>
                   </div>
                 </div>
@@ -198,7 +207,7 @@ function Dashboard() {
                           : "bg-sun/30 text-ink"
                     }`}
                   >
-                    {b.status}
+                    {t(statusKey[b.status])}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -207,12 +216,12 @@ function Dashboard() {
                       onClick={() => cancelM.mutate(b.id)}
                       className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-semibold hover:bg-muted"
                     >
-                      <XCircle className="size-3.5" /> Cancel
+                      <XCircle className="size-3.5" /> {t("dash.cancel")}
                     </button>
                   )}
                   <button
                     onClick={() => deleteM.mutate(b.id)}
-                    aria-label="Delete booking"
+                    aria-label={t("dash.delete")}
                     className="rounded-md border border-border p-2 text-muted-foreground hover:bg-muted"
                   >
                     <Trash2 className="size-3.5" />
