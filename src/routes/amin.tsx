@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { type ReactNode, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
@@ -70,7 +71,8 @@ function AdminPage() {
   const checkAdmin = useServerFn(amIAdmin);
   const [tab, setTab] = useState<TabId>("overview");
   const [navOpen, setNavOpen] = useState(false);
-  const [authState, setAuthState] = useState<"checking" | "signed-out" | "signed-in">("checking");
+  const [authState, setAuthState] = useState<"checking" | "signed-out" | "signed-in" | "error">("checking");
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const active = TABS.find((x) => x.id === tab)!;
   const {
@@ -86,19 +88,38 @@ function AdminPage() {
 
   useEffect(() => {
     let mounted = true;
+    let subscription: { unsubscribe: () => void } | undefined;
 
-    supabase.auth.getSession().then(({ data }) => {
+    const setSessionState = (session: unknown) => {
       if (!mounted) return;
-      setAuthState(data.session ? "signed-in" : "signed-out");
-    });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthError(null);
       setAuthState(session ? "signed-in" : "signed-out");
-    });
+    };
+
+    const setSessionError = (error: unknown) => {
+      console.error("Could not initialize admin authentication", error);
+      if (!mounted) return;
+      setAuthError(error instanceof Error ? error.message : "Unknown authentication error");
+      setAuthState("error");
+    };
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => setSessionState(data.session))
+      .catch(setSessionError);
+
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setSessionState(session);
+      });
+      subscription = data.subscription;
+    } catch (error) {
+      setSessionError(error);
+    }
 
     return () => {
       mounted = false;
-      data.subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
@@ -120,6 +141,15 @@ function AdminPage() {
             {t("auth.signin")}
           </Link>
         }
+      />
+    );
+  }
+
+  if (authState === "error") {
+    return (
+      <AdminState
+        title="Authentication setup needs attention"
+        body={`The admin panel could not connect to authentication in this deployment. ${authError ?? ""}`.trim()}
       />
     );
   }
@@ -206,7 +236,7 @@ function AdminPage() {
   );
 }
 
-function AdminState({ title, body, action }: { title: string; body?: string; action?: React.ReactNode }) {
+function AdminState({ title, body, action }: { title: string; body?: string; action?: ReactNode }) {
   return (
     <div className="topo flex min-h-screen items-center justify-center px-6 py-16">
       <div className="w-full max-w-md rounded-2xl bg-card p-8 text-center shadow-[0_30px_70px_-45px_var(--ink)]">
