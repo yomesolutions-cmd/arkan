@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/config";
 import type { Database } from "@/integrations/supabase/types";
 
 export type QuestionNode = {
@@ -19,8 +20,8 @@ const COLUMNS = "id, parent_id, label, label_ar, answer, answer_ar, sort_order, 
 
 /** Public read: active question tree for the chat box. */
 export const listPublicQuestions = createServerFn({ method: "GET" }).handler(async () => {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  const url = process.env["SUPABASE_URL"]!;
+  const key = SUPABASE_PUBLISHABLE_KEY;
+  const url = SUPABASE_URL;
   const client = createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
