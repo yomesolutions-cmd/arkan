@@ -5,6 +5,10 @@ import { Save, Plus } from "lucide-react";
 import { listSiteContent, saveSiteContent, type SiteContentRow } from "@/lib/content.functions";
 import { useI18n } from "@/lib/i18n";
 
+function messageFromError(error: unknown) {
+  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+}
+
 export function ContentTab() {
   const fetchAll = useServerFn(listSiteContent);
   const { data = [], isLoading } = useQuery({ queryKey: ["admin-site-content"], queryFn: () => fetchAll() });
@@ -80,6 +84,7 @@ function SectionEditor({ row }: { row: SiteContentRow }) {
         >
           <Save className="size-3.5" /> {mut.isSuccess && !mut.isPending ? t("admin.saved") : t("admin.save")}
         </button>
+        {mut.isError && <p className="basis-full text-sm text-destructive">{messageFromError(mut.error)}</p>}
         <form
           onSubmit={(e) => {
             e.preventDefault();

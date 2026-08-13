@@ -10,6 +10,10 @@ import {
 } from "@/lib/content.functions";
 import { useI18n } from "@/lib/i18n";
 
+function messageFromError(error: unknown) {
+  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+}
+
 const blank: Testimonial = {
   id: "",
   name_en: "",
@@ -82,6 +86,7 @@ export function TestimonialsTab() {
           }}
           onSave={(r) => saveM.mutate(r)}
           saving={saveM.isPending}
+          error={saveM.error}
         />
       )}
 
@@ -168,12 +173,14 @@ function TestimonialForm({
   row,
   title,
   saving,
+  error,
   onSave,
   onCancel,
 }: {
   row: Testimonial;
   title: string;
   saving: boolean;
+  error: unknown;
   onSave: (r: Testimonial) => void;
   onCancel: () => void;
 }) {
@@ -219,6 +226,7 @@ function TestimonialForm({
         >
           <Save className="size-3.5" /> {saving ? "Saving..." : t("admin.save")}
         </button>
+        {error && <p className="basis-full text-sm text-destructive">{messageFromError(error)}</p>}
       </div>
     </div>
   );

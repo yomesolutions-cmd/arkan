@@ -17,6 +17,10 @@ type Field = { key: string; label: string; type: FieldType; dir?: "ltr" | "rtl" 
 type Row = Record<string, unknown>;
 type EntityKey = "tours" | "destinations" | "hotels" | "flights";
 
+function messageFromError(error: unknown) {
+  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+}
+
 const ENTITIES: Record<
   EntityKey,
   {
@@ -221,6 +225,7 @@ export function CatalogTab() {
           fields={cfg.fields}
           initial={editing ?? emptyRow(cfg.fields)}
           saving={saveM.isPending}
+          error={saveM.error}
           onCancel={() => {
             setCreating(false);
             setEditing(null);
@@ -301,6 +306,7 @@ function ItemForm({
   initial,
   title,
   saving,
+  error,
   onSave,
   onCancel,
 }: {
@@ -308,6 +314,7 @@ function ItemForm({
   initial: Row;
   title: string;
   saving: boolean;
+  error: unknown;
   onSave: (row: Row) => void;
   onCancel: () => void;
 }) {
@@ -374,6 +381,7 @@ function ItemForm({
         >
           <Save className="size-3.5" /> {saving ? "Saving..." : t("admin.save")}
         </button>
+        {error && <p className="basis-full text-sm text-destructive">{messageFromError(error)}</p>}
       </div>
     </div>
   );

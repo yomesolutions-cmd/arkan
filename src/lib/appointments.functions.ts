@@ -49,13 +49,15 @@ export const saveAppointment = createServerFn({ method: "POST" })
     const { id, ...rest } = data;
     const payload = { ...rest, starts_at: new Date(rest.starts_at).toISOString() };
     const q = id
-      ? context.supabase.from("appointments").update(payload).eq("id", id)
+      ? context.supabase.from("appointments").update(payload).eq("id", id).select(COLS).single()
       : context.supabase
           .from("appointments")
-          .insert(context.userId ? { ...payload, created_by: context.userId } : payload);
-    const { error } = await q;
+          .insert(context.userId ? { ...payload, created_by: context.userId } : payload)
+          .select(COLS)
+          .single();
+    const { data: row, error } = await q;
     if (error) throw error;
-    return { ok: true };
+    return row as Appointment;
   });
 
 export const deleteAppointment = createServerFn({ method: "POST" })

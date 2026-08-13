@@ -143,11 +143,13 @@ export const saveSiteContent = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { data: row, error } = await context.supabase
       .from("site_content")
-      .upsert({ section: data.section, data_en: data.data_en, data_ar: data.data_ar }, { onConflict: "section" });
+      .upsert({ section: data.section, data_en: data.data_en, data_ar: data.data_ar }, { onConflict: "section" })
+      .select(CONTENT_COLS)
+      .single();
     if (error) throw error;
-    return { ok: true };
+    return row as SiteContentRow;
   });
 
 /* ----------------------------- admin: testimonials ---------------------------- */
@@ -184,20 +186,20 @@ export const saveTestimonial = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { id, ...rest } = { ...data, image_url: data.image_url || null };
     const q = id
-      ? context.supabase.from("testimonials").update(rest).eq("id", id)
-      : context.supabase.from("testimonials").insert(rest);
-    const { error } = await q;
+      ? context.supabase.from("testimonials").update(rest).eq("id", id).select(TESTIMONIAL_COLS).single()
+      : context.supabase.from("testimonials").insert(rest).select(TESTIMONIAL_COLS).single();
+    const { data: row, error } = await q;
     if (error && error.message.toLowerCase().includes("image_url")) {
       const { image_url, ...withoutImageUrl } = rest;
       const fallback = id
-        ? context.supabase.from("testimonials").update(withoutImageUrl).eq("id", id)
-        : context.supabase.from("testimonials").insert(withoutImageUrl);
-      const { error: fallbackError } = await fallback;
+        ? context.supabase.from("testimonials").update(withoutImageUrl).eq("id", id).select(TESTIMONIAL_COLS_BASE).single()
+        : context.supabase.from("testimonials").insert(withoutImageUrl).select(TESTIMONIAL_COLS_BASE).single();
+      const { data: fallbackRow, error: fallbackError } = await fallback;
       if (fallbackError) throw fallbackError;
-      return { ok: true };
+      return { ...fallbackRow, image_url: null } as Testimonial;
     }
     if (error) throw error;
-    return { ok: true };
+    return row as Testimonial;
   });
 
 export const deleteTestimonial = createServerFn({ method: "POST" })

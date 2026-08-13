@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -25,8 +25,27 @@ import { CalendarTab } from "@/components/admin/CalendarTab";
 import { PassportAlertsTab } from "@/components/admin/PassportAlertsTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
 import { getPublicUrl } from "@/lib/domains";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/amin")({
+  ssr: false,
+  beforeLoad: async ({ location }) => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/auth", search: { redirect: location.href } });
+    }
+
+    const role = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", data.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (role.error || !role.data) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Control panel — Arkan Travel admin" },

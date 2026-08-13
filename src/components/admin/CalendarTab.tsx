@@ -9,6 +9,10 @@ import {
   type Appointment,
 } from "@/lib/appointments.functions";
 
+function messageFromError(error: unknown) {
+  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+}
+
 function ymd(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -281,6 +285,7 @@ export function CalendarTab() {
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
         />
+        {saveM.isError && <p className="text-sm text-destructive">{messageFromError(saveM.error)}</p>}
         <div className="flex gap-2">
           <button
             type="submit"

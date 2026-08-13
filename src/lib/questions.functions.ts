@@ -46,8 +46,16 @@ export const listPublicQuestions = createServerFn({ method: "GET" }).handler(asy
 /** Is the signed-in caller an admin? */
 export const amIAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    return { isAdmin: true };
+  .handler(async ({ context }) => {
+    if (!context.userId) return { isAdmin: false };
+    const { data, error } = await context.supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (error) throw error;
+    return { isAdmin: Boolean(data) };
   });
 
 /** Admin read: full tree including inactive nodes. */

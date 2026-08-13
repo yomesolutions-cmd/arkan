@@ -13,6 +13,10 @@ import {
 
 const input = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
+function messageFromError(error: unknown) {
+  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+}
+
 function todayMidnight() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -409,6 +413,7 @@ export function PassportAlertsTab() {
               </button>
             )}
           </div>
+          {saveM.isError && <p className="text-sm text-destructive">{messageFromError(saveM.error)}</p>}
         </form>
       </div>
     </div>

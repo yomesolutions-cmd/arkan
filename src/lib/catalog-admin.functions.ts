@@ -50,11 +50,11 @@ export const saveTour = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => tourInput.parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const { error } = id
-      ? await context.supabase.from("tour_packages").update(rest).eq("id", id)
-      : await context.supabase.from("tour_packages").insert(rest);
+    const { data: row, error } = id
+      ? await context.supabase.from("tour_packages").update(rest).eq("id", id).select("*").single()
+      : await context.supabase.from("tour_packages").insert(rest).select("*").single();
     if (error) throw error;
-    return { ok: true };
+    return row;
   });
 
 const destinationInput = z.object({
@@ -76,11 +76,11 @@ export const saveDestination = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => destinationInput.parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const { error } = id
-      ? await context.supabase.from("destinations").update(rest).eq("id", id)
-      : await context.supabase.from("destinations").insert(rest);
+    const { data: row, error } = id
+      ? await context.supabase.from("destinations").update(rest).eq("id", id).select("*").single()
+      : await context.supabase.from("destinations").insert(rest).select("*").single();
     if (error) throw error;
-    return { ok: true };
+    return row;
   });
 
 const hotelInput = z.object({
@@ -102,11 +102,11 @@ export const saveHotel = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => hotelInput.parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const { error } = id
-      ? await context.supabase.from("hotels").update(rest).eq("id", id)
-      : await context.supabase.from("hotels").insert(rest);
+    const { data: row, error } = id
+      ? await context.supabase.from("hotels").update(rest).eq("id", id).select("*").single()
+      : await context.supabase.from("hotels").insert(rest).select("*").single();
     if (error) throw error;
-    return { ok: true };
+    return row;
   });
 
 const flightInput = z.object({
@@ -130,11 +130,11 @@ export const saveFlight = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => flightInput.parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const { error } = id
-      ? await context.supabase.from("flights").update(rest).eq("id", id)
-      : await context.supabase.from("flights").insert(rest);
+    const { data: row, error } = id
+      ? await context.supabase.from("flights").update(rest).eq("id", id).select("*").single()
+      : await context.supabase.from("flights").insert(rest).select("*").single();
     if (error) throw error;
-    return { ok: true };
+    return row;
   });
 
 export const deleteCatalogItem = createServerFn({ method: "POST" })
