@@ -18,7 +18,7 @@ type Row = Record<string, unknown>;
 type EntityKey = "tours" | "destinations" | "hotels" | "flights";
 
 function messageFromError(error: unknown) {
-  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+  return error instanceof Error ? error.message : "Could not save. Please check the dashboard permissions and try again.";
 }
 
 const ENTITIES: Record<

@@ -6,7 +6,7 @@ import { listSiteContent, saveSiteContent, type SiteContentRow } from "@/lib/con
 import { useI18n } from "@/lib/i18n";
 
 function messageFromError(error: unknown) {
-  return error instanceof Error ? error.message : "Could not save. Please sign in as an admin and try again.";
+  return error instanceof Error ? error.message : "Could not save. Please check the dashboard permissions and try again.";
 }
 
 export function ContentTab() {
