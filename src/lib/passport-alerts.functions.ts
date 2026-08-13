@@ -224,7 +224,9 @@ export const savePassportAlert = createServerFn({ method: "POST" })
     };
     const q = id
       ? context.supabase.from("passport_alerts").update(payload).eq("id", id)
-      : context.supabase.from("passport_alerts").insert({ ...payload, created_by: context.userId });
+      : context.supabase
+          .from("passport_alerts")
+          .insert(context.userId ? { ...payload, created_by: context.userId } : payload);
     const { error } = await q;
     if (error) throw error;
     return { ok: true };

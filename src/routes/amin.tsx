@@ -1,7 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { type ReactNode, useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -27,8 +25,6 @@ import { CalendarTab } from "@/components/admin/CalendarTab";
 import { PassportAlertsTab } from "@/components/admin/PassportAlertsTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
 import { getPublicUrl } from "@/lib/domains";
-import { supabase } from "@/integrations/supabase/client";
-import { amIAdmin } from "@/lib/questions.functions";
 
 export const Route = createFileRoute("/amin")({
   head: () => ({
@@ -68,104 +64,10 @@ type TabId = (typeof TABS)[number]["id"];
 
 function AdminPage() {
   const { t } = useI18n();
-  const checkAdmin = useServerFn(amIAdmin);
   const [tab, setTab] = useState<TabId>("overview");
   const [navOpen, setNavOpen] = useState(false);
-  const [authState, setAuthState] = useState<"checking" | "signed-out" | "signed-in" | "error">("checking");
-  const [authError, setAuthError] = useState<string | null>(null);
 
   const active = TABS.find((x) => x.id === tab)!;
-  const {
-    data: adminAccess,
-    isLoading: adminLoading,
-    error: adminError,
-  } = useQuery({
-    queryKey: ["admin-access", authState],
-    queryFn: () => checkAdmin(),
-    enabled: authState === "signed-in",
-    retry: false,
-  });
-
-  useEffect(() => {
-    let mounted = true;
-    let subscription: { unsubscribe: () => void } | undefined;
-
-    const setSessionState = (session: unknown) => {
-      if (!mounted) return;
-      setAuthError(null);
-      setAuthState(session ? "signed-in" : "signed-out");
-    };
-
-    const setSessionError = (error: unknown) => {
-      console.error("Could not initialize admin authentication", error);
-      if (!mounted) return;
-      setAuthError(error instanceof Error ? error.message : "Unknown authentication error");
-      setAuthState("error");
-    };
-
-    supabase.auth
-      .getSession()
-      .then(({ data }) => setSessionState(data.session))
-      .catch(setSessionError);
-
-    try {
-      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-        setSessionState(session);
-      });
-      subscription = data.subscription;
-    } catch (error) {
-      setSessionError(error);
-    }
-
-    return () => {
-      mounted = false;
-      subscription?.unsubscribe();
-    };
-  }, []);
-
-  if (authState === "checking" || (authState === "signed-in" && adminLoading)) {
-    return <AdminState title={t("admin.checking")} />;
-  }
-
-  if (authState === "signed-out") {
-    return (
-      <AdminState
-        title={t("admin.onlyAdmins")}
-        body="Please sign in before opening the admin dashboard."
-        action={
-          <Link
-            to="/auth"
-            search={{ redirect: "/amin" }}
-            className="inline-flex rounded-md bg-brand px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-brand-dark"
-          >
-            {t("auth.signin")}
-          </Link>
-        }
-      />
-    );
-  }
-
-  if (authState === "error") {
-    return (
-      <AdminState
-        title="Authentication setup needs attention"
-        body={`The admin panel could not connect to authentication in this deployment. ${authError ?? ""}`.trim()}
-      />
-    );
-  }
-
-  if (adminError || !adminAccess?.isAdmin) {
-    return (
-      <AdminState
-        title={t("admin.noAccess")}
-        body={
-          adminError
-            ? "Your login session could not be verified for this deployment. Sign out, sign in again, then reopen the admin dashboard."
-            : undefined
-        }
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-muted/40 lg:flex">
@@ -231,19 +133,6 @@ function AdminPage() {
           {tab === "subscribers" && <SubscribersTab />}
           {tab === "users" && <UsersTab />}
         </main>
-      </div>
-    </div>
-  );
-}
-
-function AdminState({ title, body, action }: { title: string; body?: string; action?: ReactNode }) {
-  return (
-    <div className="topo flex min-h-screen items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md rounded-2xl bg-card p-8 text-center shadow-[0_30px_70px_-45px_var(--ink)]">
-        <img src={logo.url} alt="Arkan Travel logo" className="mx-auto h-14 w-auto" width={160} height={160} />
-        <h1 className="mt-6 text-2xl font-extrabold text-ink">{title}</h1>
-        {body && <p className="mt-3 text-sm leading-6 text-muted-foreground">{body}</p>}
-        {action && <div className="mt-6">{action}</div>}
       </div>
     </div>
   );

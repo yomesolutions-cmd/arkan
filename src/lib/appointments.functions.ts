@@ -50,7 +50,9 @@ export const saveAppointment = createServerFn({ method: "POST" })
     const payload = { ...rest, starts_at: new Date(rest.starts_at).toISOString() };
     const q = id
       ? context.supabase.from("appointments").update(payload).eq("id", id)
-      : context.supabase.from("appointments").insert({ ...payload, created_by: context.userId });
+      : context.supabase
+          .from("appointments")
+          .insert(context.userId ? { ...payload, created_by: context.userId } : payload);
     const { error } = await q;
     if (error) throw error;
     return { ok: true };
