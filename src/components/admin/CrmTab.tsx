@@ -36,13 +36,10 @@ const CHANNELS: { id: SocialChannel | "all"; label: string; icon: typeof Inbox; 
   { id: "website", label: "Website", icon: Inbox, color: "bg-brand text-primary-foreground" },
 ];
 
-type CrmView = "messenger" | "facebook" | "whatsapp" | "instagram" | "leads";
+type CrmView = "inbox" | "leads";
 
 const CRM_MENU: { id: CrmView; label: string; icon: typeof Inbox }[] = [
-  { id: "messenger", label: "Messenger", icon: Inbox },
-  { id: "facebook", label: "Facebook", icon: Facebook },
-  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
-  { id: "instagram", label: "Instagram", icon: Instagram },
+  { id: "inbox", label: "Inbox", icon: Inbox },
   { id: "leads", label: "Leads", icon: Users },
 ];
 
@@ -88,13 +85,13 @@ export function CrmTab() {
   const conversations = data?.conversations ?? [];
   const messages = data?.messages ?? [];
 
-  const [view, setView] = useState<CrmView>("messenger");
+  const [view, setView] = useState<CrmView>("inbox");
+  const [channel, setChannel] = useState<SocialChannel | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [reply, setReply] = useState("");
   const [leadForm, setLeadForm] = useState<LeadFormState>(blankLead());
   const [conversationForm, setConversationForm] = useState<ConversationFormState>(blankConversation());
-  const channel: SocialChannel | "all" = view === "messenger" || view === "leads" ? "all" : view;
 
   const filteredConversations = useMemo(
     () =>
@@ -113,7 +110,6 @@ export function CrmTab() {
   const selected = filteredConversations.find((c) => c.id === selectedId) ?? filteredConversations[0] ?? null;
   const selectedMessages = messages.filter((m) => m.conversation_id === selected?.id);
   const selectedLead = leads.find((lead) => lead.id === selected?.lead_id) ?? null;
-  const activeMeta = channelMeta(channel);
   const activeMenu = CRM_MENU.find((item) => item.id === view) ?? CRM_MENU[0];
   const ActiveIcon = activeMenu.icon;
 
@@ -125,42 +121,44 @@ export function CrmTab() {
 
   return (
     <div className="space-y-4">
-      <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
-        <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-sky-500 to-blue-700 px-4 py-3 text-white">
-          <div className="flex items-center gap-2">
-            <ActiveIcon className="size-5" />
-            <h2 className="text-base font-extrabold">{activeMenu.label}</h2>
+      <section className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-border bg-card px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-brand">
+              <ActiveIcon className="size-5" />
+              <p className="text-xs font-extrabold uppercase">CRM workspace</p>
+            </div>
+            <h2 className="mt-1 text-xl font-extrabold text-ink">{activeMenu.label}</h2>
+            <p className="text-sm text-muted-foreground">Manage client chats and leads from one clean dashboard.</p>
           </div>
-          <div className="hidden items-center gap-2 text-xs font-semibold md:flex">
-            <span>{counts.open} open</span>
-            <span className="h-4 w-px bg-white/35" />
-            <span>{counts.leads} leads</span>
-            <span className="h-4 w-px bg-white/35" />
-            <span>{counts.newLeads} new</span>
+          <div className="flex flex-wrap gap-2">
+            {CRM_MENU.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setView(item.id)}
+                  className={`flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-extrabold ${
+                    view === item.id
+                      ? "border-brand bg-brand text-primary-foreground shadow-sm"
+                      : "border-border bg-background text-ink hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="size-4" /> {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 border-b border-border bg-card px-4 py-3">
-          {CRM_MENU.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setView(item.id)}
-                className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-extrabold ${
-                  view === item.id
-                    ? "border-brand bg-brand text-primary-foreground"
-                    : "border-border bg-background text-ink hover:bg-muted"
-                }`}
-              >
-                <Icon className="size-4" /> {item.label}
-              </button>
-            );
-          })}
+        <div className="grid gap-3 border-b border-border bg-muted/40 p-4 md:grid-cols-3">
+          <Metric icon={Inbox} label="Open chats" value={counts.open} />
+          <Metric icon={Users} label="Total leads" value={counts.leads} />
+          <Metric icon={UserPlus} label="New leads" value={counts.newLeads} />
         </div>
 
         {view === "leads" ? (
-          <div className="grid gap-4 bg-background p-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+          <div className="grid gap-4 bg-muted/30 p-4 xl:grid-cols-[21rem_minmax(0,1fr)]">
             <LeadForm
               value={leadForm}
               saving={leadM.isPending}
@@ -203,7 +201,7 @@ export function CrmTab() {
             </section>
           </div>
         ) : (
-        <div className="grid min-h-[42rem] bg-background xl:grid-cols-[20rem_minmax(0,1fr)_20rem]">
+        <div className="grid min-h-[38rem] bg-muted/30 xl:grid-cols-[19rem_minmax(0,1fr)_19rem]">
           <aside className="border-b border-border bg-card xl:border-b-0 xl:border-e">
             <div className="border-b border-border p-4">
               <div className="flex items-center gap-3">
@@ -224,12 +222,21 @@ export function CrmTab() {
                 />
               </label>
 
-              <p className="mt-3 rounded-md bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
-                Showing {activeMenu.label === "Messenger" ? "all social messages" : `${activeMenu.label} messages`}
-              </p>
+              <label className="mt-3 block">
+                <span className="mb-1 block text-xs font-bold uppercase text-muted-foreground">Channel</span>
+                <select
+                  value={channel}
+                  onChange={(e) => setChannel(e.target.value as SocialChannel | "all")}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-brand"
+                >
+                  {CHANNELS.map((item) => (
+                    <option key={item.id} value={item.id}>{item.label}</option>
+                  ))}
+                </select>
+              </label>
             </div>
 
-            <div className="h-[30rem] overflow-y-auto xl:h-[34rem]">
+            <div className="h-[28rem] overflow-y-auto xl:h-[31rem]">
               {isLoading && <p className="p-4 text-sm text-muted-foreground">{t("admin.loading")}</p>}
               {!isLoading && !filteredConversations.length && (
                 <p className="p-4 text-sm text-muted-foreground">{t("admin.empty")}</p>
@@ -245,10 +252,10 @@ export function CrmTab() {
             </div>
           </aside>
 
-          <main className="flex min-h-[34rem] flex-col bg-white">
+          <main className="flex min-h-[32rem] flex-col bg-slate-50">
             {selected ? (
               <>
-                <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+                <div className="flex items-center justify-between gap-3 border-b border-border bg-white px-5 py-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar name={selected.contact_name || selected.contact_handle || "Visitor"} channel={selected.channel} />
                     <div className="min-w-0">
@@ -274,14 +281,14 @@ export function CrmTab() {
                   </div>
                 </div>
 
-                <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-5 py-5">
+                <div className="flex-1 space-y-3 overflow-y-auto px-5 py-5">
                   {selectedMessages.map((message) => (
                     <div key={message.id} className={message.direction === "outbound" ? "flex justify-end" : "flex justify-start"}>
                       <div
                         className={
                           message.direction === "outbound"
-                            ? "max-w-[75%] rounded-2xl rounded-se-sm bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
-                            : "max-w-[75%] rounded-2xl rounded-ss-sm border border-border bg-background px-4 py-2 text-sm text-ink shadow-sm"
+                            ? "max-w-[68%] rounded-2xl rounded-se-md bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+                            : "max-w-[68%] rounded-2xl rounded-ss-md border border-border bg-white px-4 py-2 text-sm text-ink shadow-sm"
                         }
                       >
                         <p>{message.body}</p>
@@ -309,7 +316,7 @@ export function CrmTab() {
                     msgM.mutate({ conversation_id: selected.id, direction: "outbound", body: reply.trim() });
                     setReply("");
                   }}
-                  className="flex items-center gap-2 border-t border-border bg-card p-3"
+                  className="flex items-center gap-2 border-t border-border bg-white p-3"
                 >
                   <input
                     value={reply}
@@ -323,7 +330,7 @@ export function CrmTab() {
                 </form>
               </>
             ) : (
-              <div className="flex h-full min-h-[34rem] items-center justify-center text-center">
+              <div className="flex h-full min-h-[32rem] items-center justify-center text-center">
                 <div>
                   <MessageCircle className="mx-auto size-12 text-muted-foreground/40" />
                   <p className="mt-3 text-base font-extrabold text-ink">Choose a chat</p>
@@ -335,7 +342,7 @@ export function CrmTab() {
 
           <aside className="border-t border-border bg-card xl:border-s xl:border-t-0">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <p className="text-sm font-extrabold text-ink">Client panel</p>
+              <p className="text-sm font-extrabold text-ink">Client</p>
               <PanelRightOpen className="size-4 text-muted-foreground" />
             </div>
             <div className="space-y-4 p-4">
@@ -361,24 +368,34 @@ export function CrmTab() {
                 <p className="text-sm text-muted-foreground">No conversation selected.</p>
               )}
 
-              <ConversationForm
-                value={conversationForm}
-                saving={convM.isPending}
-                onChange={setConversationForm}
-                onSubmit={() => {
-                  convM.mutate(conversationForm);
-                  setConversationForm(blankConversation());
-                }}
-              />
-              <LeadForm
-                value={leadForm}
-                saving={leadM.isPending}
-                onChange={setLeadForm}
-                onSubmit={() => {
-                  leadM.mutate(leadForm);
-                  setLeadForm(blankLead());
-                }}
-              />
+              <details className="rounded-md border border-border bg-background">
+                <summary className="cursor-pointer px-3 py-2 text-sm font-extrabold text-ink">Add chat</summary>
+                <div className="border-t border-border p-3">
+                  <ConversationForm
+                    value={conversationForm}
+                    saving={convM.isPending}
+                    onChange={setConversationForm}
+                    onSubmit={() => {
+                      convM.mutate(conversationForm);
+                      setConversationForm(blankConversation());
+                    }}
+                  />
+                </div>
+              </details>
+              <details className="rounded-md border border-border bg-background">
+                <summary className="cursor-pointer px-3 py-2 text-sm font-extrabold text-ink">Add lead</summary>
+                <div className="border-t border-border p-3">
+                  <LeadForm
+                    value={leadForm}
+                    saving={leadM.isPending}
+                    onChange={setLeadForm}
+                    onSubmit={() => {
+                      leadM.mutate(leadForm);
+                      setLeadForm(blankLead());
+                    }}
+                  />
+                </div>
+              </details>
             </div>
           </aside>
         </div>
@@ -397,13 +414,13 @@ export function CrmTab() {
 
 function Metric({ icon: Icon, label, value }: { icon: typeof Inbox; label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
+    <div className="rounded-md border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
-          <p className="mt-1 text-3xl font-extrabold text-ink">{value}</p>
+          <p className="mt-1 text-2xl font-extrabold text-ink">{value}</p>
         </div>
-        <span className="flex size-11 items-center justify-center rounded-full bg-brand/10 text-brand">
+        <span className="flex size-10 items-center justify-center rounded-md bg-brand/10 text-brand">
           <Icon className="size-5" />
         </span>
       </div>
@@ -510,7 +527,7 @@ function ConversationForm({
       className="rounded-2xl border border-border bg-card p-4"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-sm font-extrabold text-ink">Add social chat</p>
+        <p className="text-sm font-extrabold text-ink">Add client chat</p>
         <Plus className="size-4 text-brand" />
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
