@@ -11,6 +11,9 @@ import {
   Inbox,
   Plus,
   Save,
+  Search,
+  MoreHorizontal,
+  PanelRightOpen,
 } from "lucide-react";
 import {
   createLeadFromConversation,
@@ -77,16 +80,30 @@ export function CrmTab() {
 
   const [channel, setChannel] = useState<SocialChannel | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [reply, setReply] = useState("");
   const [leadForm, setLeadForm] = useState<LeadFormState>(blankLead());
   const [conversationForm, setConversationForm] = useState<ConversationFormState>(blankConversation());
 
   const filteredConversations = useMemo(
-    () => conversations.filter((c) => channel === "all" || c.channel === channel),
-    [channel, conversations],
+    () =>
+      conversations.filter((c) => {
+        const channelOk = channel === "all" || c.channel === channel;
+        const term = search.trim().toLowerCase();
+        const searchOk =
+          !term ||
+          c.contact_name.toLowerCase().includes(term) ||
+          (c.contact_handle ?? "").toLowerCase().includes(term) ||
+          (c.last_message ?? "").toLowerCase().includes(term);
+        return channelOk && searchOk;
+      }),
+    [channel, conversations, search],
   );
   const selected = filteredConversations.find((c) => c.id === selectedId) ?? filteredConversations[0] ?? null;
   const selectedMessages = messages.filter((m) => m.conversation_id === selected?.id);
+  const selectedLead = leads.find((lead) => lead.id === selected?.lead_id) ?? null;
+  const activeMeta = channelMeta(channel);
+  const ActiveIcon = activeMeta.icon;
 
   const counts = {
     open: conversations.filter((c) => c.status === "open").length,
@@ -95,51 +112,64 @@ export function CrmTab() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-3 md:grid-cols-3">
-        <Metric icon={Inbox} label="Open inbox" value={counts.open} />
-        <Metric icon={Users} label="Total leads" value={counts.leads} />
-        <Metric icon={UserPlus} label="New leads" value={counts.newLeads} />
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
-        <div>
-          <p className="text-base font-extrabold text-ink">Social CRM</p>
-          <p className="text-xs text-muted-foreground">Messenger, WhatsApp, Instagram, leads, and follow-up activity.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {CHANNELS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setChannel(item.id)}
-                className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold ${
-                  channel === item.id
-                    ? "border-brand bg-brand text-primary-foreground"
-                    : "border-border bg-background text-ink hover:bg-muted"
-                }`}
-              >
-                <Icon className="size-3.5" /> {item.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {error instanceof Error && (
-        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error.message}
-        </p>
-      )}
-
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-4 py-3">
-            <p className="text-sm font-extrabold text-ink">Social inbox</p>
+    <div className="space-y-4">
+      <section className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
+        <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-sky-500 to-blue-700 px-4 py-3 text-white">
+          <div className="flex items-center gap-2">
+            <ActiveIcon className="size-5" />
+            <h2 className="text-base font-extrabold">{channel === "all" ? "Messenger" : activeMeta.label}</h2>
           </div>
-          <div className="grid min-h-[31rem] md:grid-cols-[18rem_1fr]">
-            <div className="border-b border-border md:border-b-0 md:border-e">
+          <div className="hidden items-center gap-2 text-xs font-semibold md:flex">
+            <span>{counts.open} open</span>
+            <span className="h-4 w-px bg-white/35" />
+            <span>{counts.leads} leads</span>
+            <span className="h-4 w-px bg-white/35" />
+            <span>{counts.newLeads} new</span>
+          </div>
+        </div>
+
+        <div className="grid min-h-[42rem] bg-background xl:grid-cols-[20rem_minmax(0,1fr)_20rem]">
+          <aside className="border-b border-border bg-card xl:border-b-0 xl:border-e">
+            <div className="border-b border-border p-4">
+              <div className="flex items-center gap-3">
+                <Avatar name="Admin" channel="website" />
+                <div>
+                  <p className="text-sm font-extrabold text-ink">Admin</p>
+                  <p className="text-xs text-muted-foreground">Arkan Travel CRM</p>
+                </div>
+              </div>
+
+              <label className="mt-4 flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2">
+                <Search className="size-4 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search users..."
+                  className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                />
+              </label>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {CHANNELS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setChannel(item.id)}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                        channel === item.id
+                          ? "border-brand bg-brand text-primary-foreground"
+                          : "border-border bg-background text-ink hover:bg-muted"
+                      }`}
+                    >
+                      <Icon className="size-3.5" /> {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="h-[30rem] overflow-y-auto xl:h-[34rem]">
               {isLoading && <p className="p-4 text-sm text-muted-foreground">{t("admin.loading")}</p>}
               {!isLoading && !filteredConversations.length && (
                 <p className="p-4 text-sm text-muted-foreground">{t("admin.empty")}</p>
@@ -153,14 +183,24 @@ export function CrmTab() {
                 />
               ))}
             </div>
-            <div className="flex min-h-[31rem] flex-col">
-              {selected ? (
-                <>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
-                    <div>
-                      <p className="font-extrabold text-ink">{selected.contact_name || selected.contact_handle || "Visitor"}</p>
-                      <p className="text-xs text-muted-foreground">{selected.contact_handle ?? channelMeta(selected.channel).label}</p>
+          </aside>
+
+          <main className="flex min-h-[34rem] flex-col bg-white">
+            {selected ? (
+              <>
+                <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar name={selected.contact_name || selected.contact_handle || "Visitor"} channel={selected.channel} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-extrabold text-ink">
+                        {selected.contact_name || selected.contact_handle || "Visitor"}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {selected.contact_handle ?? channelMeta(selected.channel).label} · {selected.status}
+                      </p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => makeLeadM.mutate(selected.id)}
                       disabled={Boolean(selected.lead_id) || makeLeadM.isPending}
@@ -168,72 +208,127 @@ export function CrmTab() {
                     >
                       <UserPlus className="size-3.5" /> {selected.lead_id ? "Lead linked" : "Make lead"}
                     </button>
+                    <button className="rounded-md border border-border p-2 text-muted-foreground hover:bg-muted" aria-label="Conversation options">
+                      <MoreHorizontal className="size-4" />
+                    </button>
                   </div>
-                  <div className="flex-1 space-y-3 overflow-y-auto bg-muted/45 p-4">
-                    {selectedMessages.map((message) => (
-                      <p
-                        key={message.id}
+                </div>
+
+                <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-5 py-5">
+                  {selectedMessages.map((message) => (
+                    <div key={message.id} className={message.direction === "outbound" ? "flex justify-end" : "flex justify-start"}>
+                      <div
                         className={
                           message.direction === "outbound"
-                            ? "ms-auto max-w-[80%] rounded-2xl rounded-se-sm bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground"
-                            : "max-w-[80%] rounded-2xl rounded-ss-sm border border-border bg-background px-3 py-2 text-sm text-ink"
+                            ? "max-w-[75%] rounded-2xl rounded-se-sm bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+                            : "max-w-[75%] rounded-2xl rounded-ss-sm border border-border bg-background px-4 py-2 text-sm text-ink shadow-sm"
                         }
                       >
-                        {message.body}
-                      </p>
-                    ))}
-                    {!selectedMessages.length && (
-                      <p className="text-sm text-muted-foreground">No messages recorded yet.</p>
-                    )}
-                  </div>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!reply.trim()) return;
-                      msgM.mutate({ conversation_id: selected.id, direction: "outbound", body: reply.trim() });
-                      setReply("");
-                    }}
-                    className="flex gap-2 border-t border-border p-3"
-                  >
-                    <input
-                      value={reply}
-                      onChange={(e) => setReply(e.target.value)}
-                      placeholder="Write a reply or internal follow-up"
-                      className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
-                    />
-                    <button className="flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground">
-                      <Send className="size-4" /> Send
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <p className="p-4 text-sm text-muted-foreground">Select a conversation.</p>
-              )}
-            </div>
-          </div>
-        </section>
+                        <p>{message.body}</p>
+                        <p className={`mt-1 text-[0.65rem] ${message.direction === "outbound" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                          {fmt(message.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {!selectedMessages.length && (
+                    <div className="flex h-full items-center justify-center text-center">
+                      <div>
+                        <MessageCircle className="mx-auto size-10 text-muted-foreground/50" />
+                        <p className="mt-2 text-sm font-semibold text-ink">No messages recorded yet</p>
+                        <p className="text-xs text-muted-foreground">Send a reply below to start the timeline.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-        <section className="space-y-5">
-          <ConversationForm
-            value={conversationForm}
-            saving={convM.isPending}
-            onChange={setConversationForm}
-            onSubmit={() => {
-              convM.mutate(conversationForm);
-              setConversationForm(blankConversation());
-            }}
-          />
-          <LeadForm
-            value={leadForm}
-            saving={leadM.isPending}
-            onChange={setLeadForm}
-            onSubmit={() => {
-              leadM.mutate(leadForm);
-              setLeadForm(blankLead());
-            }}
-          />
-        </section>
-      </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!reply.trim()) return;
+                    msgM.mutate({ conversation_id: selected.id, direction: "outbound", body: reply.trim() });
+                    setReply("");
+                  }}
+                  className="flex items-center gap-2 border-t border-border bg-card p-3"
+                >
+                  <input
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Write a message..."
+                    className="min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-brand"
+                  />
+                  <button className="flex size-10 items-center justify-center rounded-full bg-brand text-primary-foreground hover:bg-brand-dark" aria-label="Send message">
+                    <Send className="size-4" />
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="flex h-full min-h-[34rem] items-center justify-center text-center">
+                <div>
+                  <MessageCircle className="mx-auto size-12 text-muted-foreground/40" />
+                  <p className="mt-3 text-base font-extrabold text-ink">Choose a chat</p>
+                  <p className="text-sm text-muted-foreground">Select a conversation from the left sidebar to start messaging.</p>
+                </div>
+              </div>
+            )}
+          </main>
+
+          <aside className="border-t border-border bg-card xl:border-s xl:border-t-0">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <p className="text-sm font-extrabold text-ink">Client panel</p>
+              <PanelRightOpen className="size-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-4 p-4">
+              {selected ? (
+                <div className="rounded-md border border-border bg-background p-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar name={selected.contact_name || selected.contact_handle || "Visitor"} channel={selected.channel} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-extrabold text-ink">
+                        {selected.contact_name || selected.contact_handle || "Visitor"}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{selected.contact_handle ?? "-"}</p>
+                    </div>
+                  </div>
+                  <dl className="mt-4 space-y-2 text-xs">
+                    <Info label="Channel" value={channelMeta(selected.channel).label} />
+                    <Info label="Status" value={selected.status} />
+                    <Info label="Last message" value={fmt(selected.last_message_at)} />
+                    <Info label="Lead" value={selectedLead ? selectedLead.status : selected.lead_id ? "Linked" : "Not linked"} />
+                  </dl>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No conversation selected.</p>
+              )}
+
+              <ConversationForm
+                value={conversationForm}
+                saving={convM.isPending}
+                onChange={setConversationForm}
+                onSubmit={() => {
+                  convM.mutate(conversationForm);
+                  setConversationForm(blankConversation());
+                }}
+              />
+              <LeadForm
+                value={leadForm}
+                saving={leadM.isPending}
+                onChange={setLeadForm}
+                onSubmit={() => {
+                  leadM.mutate(leadForm);
+                  setLeadForm(blankLead());
+                }}
+              />
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {error instanceof Error && (
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error.message}
+        </p>
+      )}
 
       <section className="overflow-x-auto rounded-2xl border border-border bg-card">
         <div className="border-b border-border px-4 py-3">
@@ -273,6 +368,36 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Inbox; label: strin
           <Icon className="size-5" />
         </span>
       </div>
+    </div>
+  );
+}
+
+function Avatar({ name, channel }: { name: string; channel: SocialChannel }) {
+  const meta = channelMeta(channel);
+  const Icon = meta.icon;
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "A";
+
+  return (
+    <span className="relative flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-extrabold text-background">
+      {initials}
+      <span className={`absolute -bottom-0.5 -end-0.5 flex size-5 items-center justify-center rounded-full ring-2 ring-card ${meta.color}`}>
+        <Icon className="size-3" />
+      </span>
+    </span>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <dt className="font-semibold text-muted-foreground">{label}</dt>
+      <dd className="max-w-[9rem] text-end font-bold text-ink">{value}</dd>
     </div>
   );
 }
