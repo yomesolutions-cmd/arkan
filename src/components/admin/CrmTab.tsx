@@ -36,6 +36,16 @@ const CHANNELS: { id: SocialChannel | "all"; label: string; icon: typeof Inbox; 
   { id: "website", label: "Website", icon: Inbox, color: "bg-brand text-primary-foreground" },
 ];
 
+type CrmView = "messenger" | "facebook" | "whatsapp" | "instagram" | "leads";
+
+const CRM_MENU: { id: CrmView; label: string; icon: typeof Inbox }[] = [
+  { id: "messenger", label: "Messenger", icon: Inbox },
+  { id: "facebook", label: "Facebook", icon: Facebook },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { id: "instagram", label: "Instagram", icon: Instagram },
+  { id: "leads", label: "Leads", icon: Users },
+];
+
 const leadStatuses = ["new", "contacted", "qualified", "won", "lost"] as const;
 
 function fmt(value: string | null | undefined) {
@@ -78,12 +88,13 @@ export function CrmTab() {
   const conversations = data?.conversations ?? [];
   const messages = data?.messages ?? [];
 
-  const [channel, setChannel] = useState<SocialChannel | "all">("all");
+  const [view, setView] = useState<CrmView>("messenger");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [reply, setReply] = useState("");
   const [leadForm, setLeadForm] = useState<LeadFormState>(blankLead());
   const [conversationForm, setConversationForm] = useState<ConversationFormState>(blankConversation());
+  const channel: SocialChannel | "all" = view === "messenger" || view === "leads" ? "all" : view;
 
   const filteredConversations = useMemo(
     () =>
@@ -103,7 +114,8 @@ export function CrmTab() {
   const selectedMessages = messages.filter((m) => m.conversation_id === selected?.id);
   const selectedLead = leads.find((lead) => lead.id === selected?.lead_id) ?? null;
   const activeMeta = channelMeta(channel);
-  const ActiveIcon = activeMeta.icon;
+  const activeMenu = CRM_MENU.find((item) => item.id === view) ?? CRM_MENU[0];
+  const ActiveIcon = activeMenu.icon;
 
   const counts = {
     open: conversations.filter((c) => c.status === "open").length,
@@ -117,7 +129,7 @@ export function CrmTab() {
         <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-sky-500 to-blue-700 px-4 py-3 text-white">
           <div className="flex items-center gap-2">
             <ActiveIcon className="size-5" />
-            <h2 className="text-base font-extrabold">{channel === "all" ? "Messenger" : activeMeta.label}</h2>
+            <h2 className="text-base font-extrabold">{activeMenu.label}</h2>
           </div>
           <div className="hidden items-center gap-2 text-xs font-semibold md:flex">
             <span>{counts.open} open</span>
@@ -128,6 +140,69 @@ export function CrmTab() {
           </div>
         </div>
 
+        <div className="flex flex-wrap gap-2 border-b border-border bg-card px-4 py-3">
+          {CRM_MENU.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setView(item.id)}
+                className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-extrabold ${
+                  view === item.id
+                    ? "border-brand bg-brand text-primary-foreground"
+                    : "border-border bg-background text-ink hover:bg-muted"
+                }`}
+              >
+                <Icon className="size-4" /> {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {view === "leads" ? (
+          <div className="grid gap-4 bg-background p-4 xl:grid-cols-[22rem_minmax(0,1fr)]">
+            <LeadForm
+              value={leadForm}
+              saving={leadM.isPending}
+              onChange={setLeadForm}
+              onSubmit={() => {
+                leadM.mutate(leadForm);
+                setLeadForm(blankLead());
+              }}
+            />
+            <section className="overflow-x-auto rounded-md border border-border bg-card">
+              <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+                <div>
+                  <p className="text-sm font-extrabold text-ink">Leads list</p>
+                  <p className="text-xs text-muted-foreground">Open any lead from the row to update it.</p>
+                </div>
+                <button
+                  onClick={() => setLeadForm(blankLead())}
+                  className="flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-xs font-semibold text-primary-foreground"
+                >
+                  <Plus className="size-4" /> Add lead
+                </button>
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-muted text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 text-start">Client</th>
+                    <th className="px-4 py-3 text-start">Contact</th>
+                    <th className="px-4 py-3 text-start">Channel</th>
+                    <th className="px-4 py-3 text-start">Status</th>
+                    <th className="px-4 py-3 text-start">Last message</th>
+                    <th className="px-4 py-3 text-start">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => (
+                    <LeadRow key={lead.id} lead={lead} onEdit={setLeadForm} />
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          </div>
+        ) : (
         <div className="grid min-h-[42rem] bg-background xl:grid-cols-[20rem_minmax(0,1fr)_20rem]">
           <aside className="border-b border-border bg-card xl:border-b-0 xl:border-e">
             <div className="border-b border-border p-4">
@@ -149,24 +224,9 @@ export function CrmTab() {
                 />
               </label>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                {CHANNELS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setChannel(item.id)}
-                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                        channel === item.id
-                          ? "border-brand bg-brand text-primary-foreground"
-                          : "border-border bg-background text-ink hover:bg-muted"
-                      }`}
-                    >
-                      <Icon className="size-3.5" /> {item.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="mt-3 rounded-md bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
+                Showing {activeMenu.label === "Messenger" ? "all social messages" : `${activeMenu.label} messages`}
+              </p>
             </div>
 
             <div className="h-[30rem] overflow-y-auto xl:h-[34rem]">
@@ -322,6 +382,7 @@ export function CrmTab() {
             </div>
           </aside>
         </div>
+        )}
       </section>
 
       {error instanceof Error && (
@@ -330,28 +391,6 @@ export function CrmTab() {
         </p>
       )}
 
-      <section className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <div className="border-b border-border px-4 py-3">
-          <p className="text-sm font-extrabold text-ink">Leads list</p>
-        </div>
-        <table className="w-full text-sm">
-          <thead className="bg-muted text-xs uppercase text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 text-start">Client</th>
-              <th className="px-4 py-3 text-start">Contact</th>
-              <th className="px-4 py-3 text-start">Channel</th>
-              <th className="px-4 py-3 text-start">Status</th>
-              <th className="px-4 py-3 text-start">Last message</th>
-              <th className="px-4 py-3 text-start">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((lead) => (
-              <LeadRow key={lead.id} lead={lead} onEdit={setLeadForm} />
-            ))}
-          </tbody>
-        </table>
-      </section>
     </div>
   );
 }
