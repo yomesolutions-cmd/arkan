@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronDown, ChevronRight, Plus, Trash2, Save, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Trash2, Save, Eye, EyeOff, Facebook, Instagram, MessageCircle, Globe2 } from "lucide-react";
 import {
   listAllQuestions,
   createQuestion,
@@ -13,12 +13,22 @@ import { useI18n } from "@/lib/i18n";
 
 type PatchInput = {
   id: string;
+  channel?: QuestionNode["channel"];
   label?: string;
   label_ar?: string;
   answer?: string | null;
   answer_ar?: string | null;
+  shortcut?: string;
+  is_lead?: boolean;
   is_active?: boolean;
 };
+
+const CHANNELS: { id: QuestionNode["channel"]; label: string; icon: typeof Globe2 }[] = [
+  { id: "website", label: "Website", icon: Globe2 },
+  { id: "facebook", label: "Facebook", icon: Facebook },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { id: "instagram", label: "Instagram", icon: Instagram },
+];
 
 export function QuestionsTab() {
   const { t } = useI18n();
@@ -39,8 +49,15 @@ export function QuestionsTab() {
   };
 
   const addM = useMutation({
-    mutationFn: (input: { parent_id: string | null; label: string; label_ar: string; sort_order: number }) =>
-      add({ data: input }),
+    mutationFn: (input: {
+      parent_id: string | null;
+      channel: QuestionNode["channel"];
+      label: string;
+      label_ar: string;
+      shortcut: string;
+      is_lead: boolean;
+      sort_order: number;
+    }) => add({ data: input }),
     onSuccess: invalidate,
   });
   const patchM = useMutation({ mutationFn: (input: PatchInput) => patch({ data: input }), onSuccess: invalidate });
@@ -59,18 +76,51 @@ export function QuestionsTab() {
 
   const [newRoot, setNewRoot] = useState("");
   const [newRootAr, setNewRootAr] = useState("");
+  const [channel, setChannel] = useState<QuestionNode["channel"]>("website");
+
+  const filteredRoots = (byParent.get(null) ?? []).filter((n) => n.channel === channel);
+  const activeChannel = CHANNELS.find((c) => c.id === channel)!;
+  const ActiveIcon = activeChannel.icon;
 
   return (
     <div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3">
+        <div>
+          <p className="text-sm font-extrabold text-ink">Question Builder</p>
+          <p className="text-xs text-muted-foreground">Build website and social-media chat paths by channel.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {CHANNELS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setChannel(item.id)}
+                className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold ${
+                  channel === item.id
+                    ? "border-brand bg-brand text-primary-foreground"
+                    : "border-border bg-background text-ink hover:bg-muted"
+                }`}
+              >
+                <Icon className="size-3.5" /> {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (!newRoot.trim()) return;
           addM.mutate({
             parent_id: null,
+            channel,
             label: newRoot.trim(),
             label_ar: newRootAr.trim(),
-            sort_order: (byParent.get(null)?.length ?? 0) + 1,
+            shortcut: "",
+            is_lead: false,
+            sort_order: filteredRoots.length + 1,
           });
           setNewRoot("");
           setNewRootAr("");
@@ -80,7 +130,7 @@ export function QuestionsTab() {
         <input
           value={newRoot}
           onChange={(e) => setNewRoot(e.target.value)}
-          placeholder="New main topic (EN)"
+          placeholder={`New ${activeChannel.label} main question (EN)`}
           className="min-w-48 flex-1 rounded-md border border-border bg-card px-4 py-3 text-sm"
         />
         <input
@@ -91,20 +141,21 @@ export function QuestionsTab() {
           className="min-w-48 flex-1 rounded-md border border-border bg-card px-4 py-3 text-sm"
         />
         <button className="flex items-center gap-2 rounded-md bg-brand px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-brand-dark">
-          <Plus className="size-4" /> {t("admin.add")}
+          <ActiveIcon className="size-4" /> <Plus className="size-4" /> {t("admin.add")}
         </button>
       </form>
 
       <div className="mt-6 space-y-3">
         {isLoading && <p className="text-sm text-muted-foreground">{t("admin.loading")}</p>}
-        {(byParent.get(null) ?? []).map((n) => (
+        {!isLoading && !filteredRoots.length && <p className="text-sm text-muted-foreground">{t("admin.empty")}</p>}
+        {filteredRoots.map((n) => (
           <NodeRow
             key={n.id}
             node={n}
             depth={0}
             byParent={byParent}
             onAdd={(parent_id, label, label_ar, sort_order) =>
-              addM.mutate({ parent_id, label, label_ar, sort_order })
+              addM.mutate({ parent_id, channel, label, label_ar, shortcut: "", is_lead: false, sort_order })
             }
             onPatch={(input) => patchM.mutate(input)}
             onDelete={(id) => delM.mutate(id)}
@@ -136,6 +187,8 @@ function NodeRow({
   const [labelAr, setLabelAr] = useState(node.label_ar ?? "");
   const [answer, setAnswer] = useState(node.answer ?? "");
   const [answerAr, setAnswerAr] = useState(node.answer_ar ?? "");
+  const [shortcut, setShortcut] = useState(node.shortcut ?? "");
+  const [isLead, setIsLead] = useState(node.is_lead);
   const [child, setChild] = useState("");
   const [childAr, setChildAr] = useState("");
 
@@ -143,7 +196,9 @@ function NodeRow({
     label !== node.label ||
     labelAr !== (node.label_ar ?? "") ||
     answer !== (node.answer ?? "") ||
-    answerAr !== (node.answer_ar ?? "");
+    answerAr !== (node.answer_ar ?? "") ||
+    shortcut !== (node.shortcut ?? "") ||
+    isLead !== node.is_lead;
 
   return (
     <div style={{ marginInlineStart: depth * 20 }} className="rounded-2xl border border-border bg-card p-4">
@@ -180,7 +235,7 @@ function NodeRow({
         </button>
       </div>
 
-      <div className="mt-3 grid gap-2 md:grid-cols-2">
+      <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_12rem_7rem]">
         <textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
@@ -196,9 +251,25 @@ function NodeRow({
           placeholder="الإجابة بالعربية"
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
+        <input
+          value={shortcut}
+          onChange={(e) => setShortcut(e.target.value)}
+          placeholder="Shortcut"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+        />
+        <label className="flex items-center justify-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs font-semibold text-ink">
+          <input type="checkbox" checked={isLead} onChange={(e) => setIsLead(e.target.checked)} />
+          Lead
+        </label>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[0.68rem] font-extrabold uppercase text-brand">
+          Level {depth + 1}
+        </span>
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[0.68rem] font-semibold text-muted-foreground">
+          {children.length} sub
+        </span>
         <button
           disabled={!dirty}
           onClick={() =>
@@ -208,6 +279,8 @@ function NodeRow({
               label_ar: labelAr.trim(),
               answer: answer.trim() || null,
               answer_ar: answerAr.trim() || null,
+              shortcut: shortcut.trim(),
+              is_lead: isLead,
             })
           }
           className="flex items-center gap-1.5 rounded-md bg-ink px-4 py-2 text-xs font-semibold text-background disabled:opacity-40"

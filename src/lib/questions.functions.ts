@@ -8,15 +8,18 @@ import type { Database } from "@/integrations/supabase/types";
 export type QuestionNode = {
   id: string;
   parent_id: string | null;
+  channel: "website" | "facebook" | "whatsapp" | "instagram";
   label: string;
   label_ar: string;
   answer: string | null;
   answer_ar: string | null;
+  shortcut: string;
+  is_lead: boolean;
   sort_order: number;
   is_active: boolean;
 };
 
-const COLUMNS = "id, parent_id, label, label_ar, answer, answer_ar, sort_order, is_active";
+const COLUMNS = "id, parent_id, channel, label, label_ar, answer, answer_ar, shortcut, is_lead, sort_order, is_active";
 
 /** Public read: active question tree for the chat box. */
 export const listPublicQuestions = createServerFn({ method: "GET" }).handler(async () => {
@@ -38,6 +41,7 @@ export const listPublicQuestions = createServerFn({ method: "GET" }).handler(asy
   const { data, error } = await client
     .from("question_nodes")
     .select(COLUMNS)
+    .eq("channel", "website")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
   if (error) throw error;
@@ -73,10 +77,13 @@ export const listAllQuestions = createServerFn({ method: "GET" })
 
 const createSchema = z.object({
   parent_id: z.string().uuid().nullable().optional(),
+  channel: z.enum(["website", "facebook", "whatsapp", "instagram"]).default("website"),
   label: z.string().trim().min(1).max(200),
   label_ar: z.string().trim().max(200).default(""),
   answer: z.string().trim().max(4000).nullable().optional(),
   answer_ar: z.string().trim().max(4000).nullable().optional(),
+  shortcut: z.string().trim().max(120).default(""),
+  is_lead: z.boolean().default(false),
   sort_order: z.number().int().min(0).max(9999).default(0),
 });
 
@@ -88,10 +95,13 @@ export const createQuestion = createServerFn({ method: "POST" })
       .from("question_nodes")
       .insert({
         parent_id: data.parent_id ?? null,
+        channel: data.channel,
         label: data.label,
         label_ar: data.label_ar,
         answer: data.answer || null,
         answer_ar: data.answer_ar || null,
+        shortcut: data.shortcut,
+        is_lead: data.is_lead,
         sort_order: data.sort_order,
       })
       .select(COLUMNS)
@@ -104,8 +114,11 @@ const updateSchema = z.object({
   id: z.string().uuid(),
   label: z.string().trim().min(1).max(200).optional(),
   label_ar: z.string().trim().max(200).optional(),
+  channel: z.enum(["website", "facebook", "whatsapp", "instagram"]).optional(),
   answer: z.string().trim().max(4000).nullable().optional(),
   answer_ar: z.string().trim().max(4000).nullable().optional(),
+  shortcut: z.string().trim().max(120).optional(),
+  is_lead: z.boolean().optional(),
   sort_order: z.number().int().min(0).max(9999).optional(),
   is_active: z.boolean().optional(),
 });
@@ -117,15 +130,21 @@ export const updateQuestion = createServerFn({ method: "POST" })
     const patch: {
       label?: string;
       label_ar?: string;
+      channel?: "website" | "facebook" | "whatsapp" | "instagram";
       answer?: string | null;
       answer_ar?: string | null;
+      shortcut?: string;
+      is_lead?: boolean;
       sort_order?: number;
       is_active?: boolean;
     } = {};
     if (data.label !== undefined) patch.label = data.label;
     if (data.label_ar !== undefined) patch.label_ar = data.label_ar;
+    if (data.channel !== undefined) patch.channel = data.channel;
     if (data.answer !== undefined) patch.answer = data.answer || null;
     if (data.answer_ar !== undefined) patch.answer_ar = data.answer_ar || null;
+    if (data.shortcut !== undefined) patch.shortcut = data.shortcut;
+    if (data.is_lead !== undefined) patch.is_lead = data.is_lead;
     if (data.sort_order !== undefined) patch.sort_order = data.sort_order;
     if (data.is_active !== undefined) patch.is_active = data.is_active;
     const { data: row, error } = await context.supabase

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   LayoutDashboard,
+  BriefcaseBusiness,
   CalendarDays,
   FileText,
   Quote,
@@ -21,6 +22,7 @@ import { CatalogTab } from "@/components/admin/CatalogTab";
 import { QuestionsTab } from "@/components/admin/QuestionsTab";
 import { SubscribersTab, ChatLogsTab, UsersTab } from "@/components/admin/ListsTab";
 import { OverviewTab } from "@/components/admin/OverviewTab";
+import { CrmTab } from "@/components/admin/CrmTab";
 import { CalendarTab } from "@/components/admin/CalendarTab";
 import { PassportAlertsTab } from "@/components/admin/PassportAlertsTab";
 import logo from "@/assets/arkan-logo.png.asset.json";
@@ -50,6 +52,7 @@ export const Route = createFileRoute("/amin")({
 
 const TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "crm", label: "CRM", icon: BriefcaseBusiness },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "passports", label: "Passport alerts", icon: ShieldCheck },
   { id: "content", label: "Page content", icon: FileText },
@@ -124,6 +127,7 @@ function AdminPage() {
 
         <main className="px-6 py-8">
           {tab === "overview" && <OverviewTab />}
+          {tab === "crm" && <CrmTab />}
           {tab === "calendar" && <CalendarTab />}
           {tab === "passports" && <PassportAlertsTab />}
           {tab === "content" && <ContentTab />}

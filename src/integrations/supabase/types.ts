@@ -281,6 +281,56 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_leads: {
+        Row: {
+          channel: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          last_message: string | null
+          notes: string | null
+          phone: string | null
+          source_question_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          last_message?: string | null
+          notes?: string | null
+          phone?: string | null
+          source_question_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          last_message?: string | null
+          notes?: string | null
+          phone?: string | null
+          source_question_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_source_question_id_fkey"
+            columns: ["source_question_id"]
+            isOneToOne: false
+            referencedRelation: "question_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       passport_alerts: {
         Row: {
           created_at: string
@@ -366,39 +416,48 @@ export type Database = {
         Row: {
           answer: string | null
           answer_ar: string | null
+          channel: string
           created_at: string
           id: string
           image_url: string | null
           is_active: boolean
+          is_lead: boolean
           label: string
           label_ar: string
           parent_id: string | null
+          shortcut: string
           sort_order: number
           updated_at: string
         }
         Insert: {
           answer?: string | null
           answer_ar?: string | null
+          channel?: string
           created_at?: string
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_lead?: boolean
           label: string
           label_ar?: string
           parent_id?: string | null
+          shortcut?: string
           sort_order?: number
           updated_at?: string
         }
         Update: {
           answer?: string | null
           answer_ar?: string | null
+          channel?: string
           created_at?: string
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_lead?: boolean
           label?: string
           label_ar?: string
           parent_id?: string | null
+          shortcut?: string
           sort_order?: number
           updated_at?: string
         }
@@ -438,6 +497,88 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      social_conversations: {
+        Row: {
+          channel: string
+          contact_handle: string | null
+          contact_name: string
+          created_at: string
+          id: string
+          last_message: string | null
+          last_message_at: string
+          lead_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          contact_handle?: string | null
+          contact_name?: string
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          lead_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          contact_handle?: string | null
+          contact_name?: string
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          lead_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          direction: string
+          external_id: string | null
+          id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          direction?: string
+          external_id?: string | null
+          id?: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          external_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "social_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {
