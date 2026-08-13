@@ -124,14 +124,21 @@ function AuthPage() {
   async function onGoogle() {
     setError(null);
     setStoredRedirect(dest);
-    const { error: authError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: getAuthCallbackUrl(),
-      },
-    });
-    if (authError) {
-      setError("Google sign-in failed. Please try again.");
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getAuthCallbackUrl(),
+        },
+      });
+      if (authError) throw authError;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      setError(
+        message.toLowerCase().includes("oauth") || message.toLowerCase().includes("provider")
+          ? "Google login needs the Google OAuth Client Secret saved in Supabase."
+          : "Google sign-in failed. Please try again.",
+      );
     }
   }
 

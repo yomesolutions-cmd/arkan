@@ -81,27 +81,29 @@ export function ChatBox() {
         <button
           onClick={() => setOpen(true)}
           aria-label={t("chat.open")}
-          className="fixed bottom-6 end-6 z-50 flex size-14 items-center justify-center rounded-full bg-coral text-primary-foreground shadow-xl transition-transform hover:scale-105 hover:bg-coral-dark"
+          className="fixed bottom-6 end-6 z-50 flex size-14 items-center justify-center rounded-full bg-brand text-primary-foreground shadow-xl shadow-brand/25 ring-4 ring-sun/35 transition-transform hover:scale-105 hover:bg-brand-dark"
         >
           <MessageCircle className="size-6" />
         </button>
       )}
 
       {open && (
-        <div className="fixed bottom-6 end-6 z-50 flex h-[32rem] w-[min(22rem,calc(100vw-3rem))] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
-          <header className="flex items-center gap-3 bg-mint px-4 py-3">
-            <img src={logo.url} alt="Arkan Travel" className="h-9 w-auto" width={80} height={80} />
+        <div className="fixed bottom-6 end-6 z-50 flex h-[32rem] w-[min(22rem,calc(100vw-3rem))] flex-col overflow-hidden rounded-3xl border border-brand/25 bg-card shadow-2xl">
+          <header className="flex items-center gap-3 bg-brand px-4 py-3 text-primary-foreground">
+            <span className="flex size-12 items-center justify-center rounded-full bg-background p-1 shadow-sm ring-2 ring-sun/70">
+              <img src={logo.url} alt="Arkan Travel" className="h-9 w-auto" width={80} height={80} />
+            </span>
             <div className="flex-1">
-              <p className="text-sm font-extrabold text-ink">{t("chat.title")}</p>
-              <p className="text-[0.7rem] text-muted-foreground">{t("chat.subtitle")}</p>
+              <p className="text-sm font-extrabold">{t("chat.title")}</p>
+              <p className="text-[0.7rem] text-primary-foreground/80">{t("chat.subtitle")}</p>
             </div>
             <button onClick={() => setOpen(false)} aria-label={t("chat.close")} className="rounded-full p-1.5 hover:bg-background/60">
-              <X className="size-4 text-ink" />
+              <X className="size-4" />
             </button>
           </header>
 
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            <p className="max-w-[85%] rounded-2xl rounded-ss-sm bg-muted px-3 py-2 text-sm text-ink">
+          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-mint/45 px-4 py-4">
+            <p className="max-w-[85%] rounded-2xl rounded-ss-sm border border-brand/15 bg-background px-3 py-2 text-sm text-ink shadow-sm">
               {t("chat.greeting")}
             </p>
             {log.map((b) => (
@@ -109,8 +111,8 @@ export function ChatBox() {
                 key={b.id}
                 className={
                   b.from === "user"
-                    ? "ms-auto max-w-[85%] rounded-2xl rounded-se-sm bg-coral px-3 py-2 text-sm font-medium text-primary-foreground"
-                    : "max-w-[85%] rounded-2xl rounded-ss-sm bg-muted px-3 py-2 text-sm text-ink"
+                    ? "ms-auto max-w-[85%] rounded-2xl rounded-se-sm bg-brand px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-brand/20"
+                    : "max-w-[85%] rounded-2xl rounded-ss-sm border border-brand/15 bg-background px-3 py-2 text-sm text-ink shadow-sm"
                 }
               >
                 {b.text}
@@ -125,7 +127,7 @@ export function ChatBox() {
                   <button
                     key={o.id}
                     onClick={() => choose(o)}
-                    className="rounded-full border border-coral/40 bg-background px-3 py-2 text-start text-xs font-semibold text-ink transition-colors hover:bg-coral hover:text-primary-foreground"
+                    className="rounded-full border border-brand/35 bg-background px-3 py-2 text-start text-xs font-semibold text-ink transition-colors hover:bg-brand hover:text-primary-foreground"
                   >
                     {pick(o.label, o.label_ar)}
                   </button>
@@ -138,17 +140,17 @@ export function ChatBox() {
             )}
           </div>
 
-          <footer className="flex items-center gap-2 border-t border-border px-3 py-2">
+          <footer className="flex items-center gap-2 border-t border-brand/20 bg-brand-soft px-3 py-2">
             <button
               onClick={back}
               disabled={path.length === 0}
-              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-40 hover:bg-muted"
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-40 hover:bg-background"
             >
               <BackIcon className="size-3.5" /> {t("chat.back")}
             </button>
             <button
               onClick={restart}
-              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink hover:bg-muted"
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink hover:bg-background"
             >
               <RotateCcw className="size-3.5" /> {t("chat.restart")}
             </button>
