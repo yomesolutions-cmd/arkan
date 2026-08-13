@@ -26,10 +26,38 @@ function safePath(p: string | undefined) {
   return p && p.startsWith("/") && !p.startsWith("//") ? p : "/dashboard";
 }
 
+function getStoredRedirect() {
+  try {
+    return sessionStorage.getItem("arkan_redirect") ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function setStoredRedirect(path: string) {
+  try {
+    sessionStorage.setItem("arkan_redirect", path);
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearStoredRedirect() {
+  try {
+    sessionStorage.removeItem("arkan_redirect");
+  } catch {
+    /* ignore */
+  }
+}
+
+function getAuthCallbackUrl() {
+  return `${window.location.origin}/auth`;
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/auth" });
-  const dest = safePath(search.redirect);
+  const dest = safePath(search.redirect ?? getStoredRedirect());
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [fullName, setFullName] = useState("");
@@ -40,9 +68,16 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: dest, replace: true });
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!data.session) return;
+        clearStoredRedirect();
+        navigate({ to: dest, replace: true });
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Could not complete sign-in.");
+      });
   }, [dest, navigate]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -59,7 +94,7 @@ function AuthPage() {
           email: trimmedEmail,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: getAuthCallbackUrl(),
             data: { full_name: fullName.trim() },
           },
         });
@@ -77,6 +112,7 @@ function AuthPage() {
         password,
       });
       if (err) throw err;
+      clearStoredRedirect();
       navigate({ to: dest, replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -87,15 +123,11 @@ function AuthPage() {
 
   async function onGoogle() {
     setError(null);
-    try {
-      sessionStorage.setItem("arkan_redirect", dest);
-    } catch {
-      /* ignore */
-    }
+    setStoredRedirect(dest);
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: getAuthCallbackUrl(),
       },
     });
     if (authError) {
