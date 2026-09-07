@@ -6,6 +6,10 @@ import { supabase } from './client'
 // the browser never attaches the bearer token to serverFn RPCs.
 export const attachSupabaseAuth = createMiddleware({ type: 'function' }).client(
   async ({ next }) => {
+    if (typeof window === 'undefined') {
+      return next()
+    }
+
     if (window.location.pathname.startsWith('/amin')) {
       return next()
     }
