@@ -38,6 +38,116 @@ function withDefaultImageUrl(rows: TestimonialWithoutImage[]): Testimonial[] {
   return rows.map((row) => ({ ...row, image_url: null }));
 }
 
+const FALLBACK_SITE_CONTENT = {
+  sections: {
+    hero: {
+      en: {
+        eyebrow: "Explore the world",
+        title: "Find your next unforgettable journey",
+        subtitle: "Handpicked tours, flights and hotels across the world, curated by Arkan Travel.",
+        cta: "Start searching",
+      },
+      ar: {
+        eyebrow: "اكتشف العالم",
+        title: "ابحث عن رحلتك القادمة التي لا تنسى",
+        subtitle: "رحلات وطيران وفنادق مختارة بعناية حول العالم من أركان للسفر.",
+        cta: "ابدأ البحث",
+      },
+    },
+    about: {
+      en: {
+        eyebrow: "About us",
+        title: "Travel made simple, warm and personal",
+        body: "Arkan Travel has been crafting journeys for over a decade. From family holidays to business trips, our team handles every detail so you can simply enjoy the ride.",
+        stat1_value: "12k+",
+        stat1_label: "Happy travellers",
+        stat2_value: "85",
+        stat2_label: "Destinations",
+        stat3_value: "4.9",
+        stat3_label: "Average rating",
+      },
+      ar: {
+        eyebrow: "من نحن",
+        title: "سفر بسيط ودافئ وشخصي",
+        body: "تصنع أركان للسفر الرحلات المميزة منذ أكثر من عشر سنوات. من العطلات العائلية إلى رحلات العمل، يتولى فريقنا كل التفاصيل لتستمتع أنت فقط بالرحلة.",
+        stat1_value: "+12 ألف",
+        stat1_label: "مسافر سعيد",
+        stat2_value: "85",
+        stat2_label: "وجهة",
+        stat3_value: "4.9",
+        stat3_label: "متوسط التقييم",
+      },
+    },
+    testimonials_header: {
+      en: {
+        eyebrow: "Testimonials",
+        title: "What our travellers say",
+        subtitle: "Real words from people who travelled with Arkan.",
+      },
+      ar: {
+        eyebrow: "آراء العملاء",
+        title: "ماذا يقول مسافرونا",
+        subtitle: "كلمات حقيقية من أشخاص سافروا مع أركان.",
+      },
+    },
+    newsletter: {
+      en: {
+        title: "Get travel deals in your inbox",
+        subtitle: "Subscribe for handpicked offers. No spam, unsubscribe anytime.",
+        cta: "Subscribe",
+        placeholder: "Your email address",
+      },
+      ar: {
+        title: "احصل على عروض السفر في بريدك",
+        subtitle: "اشترك لتصلك عروض مختارة. بدون رسائل مزعجة، ويمكنك إلغاء الاشتراك في أي وقت.",
+        cta: "اشترك",
+        placeholder: "بريدك الإلكتروني",
+      },
+    },
+  },
+  testimonials: [
+    {
+      id: "00000000-0000-4000-8000-000000000201",
+      name_en: "Sarah Malik",
+      name_ar: "سارة مالك",
+      image_url: null,
+      role_en: "Family trip to Istanbul",
+      role_ar: "رحلة عائلية إلى إسطنبول",
+      quote_en: "Everything was organised perfectly. The hotel was beautiful and the guide was so kind to our kids.",
+      quote_ar: "كان كل شيء منظما بشكل مثالي. الفندق كان جميلا والمرشد كان لطيفا جدا مع أطفالنا.",
+      rating: 5,
+      sort_order: 1,
+      is_active: true,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000202",
+      name_en: "Omar Haddad",
+      name_ar: "عمر حداد",
+      image_url: null,
+      role_en: "Business travel",
+      role_ar: "سفر عمل",
+      quote_en: "Booked a last-minute flight and got a better price than anywhere else. Support answered in minutes.",
+      quote_ar: "حجزت رحلة في اللحظة الأخيرة وحصلت على سعر أفضل من أي مكان آخر. خدمة العملاء ردت خلال دقائق.",
+      rating: 5,
+      sort_order: 2,
+      is_active: true,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000203",
+      name_en: "Lina Kassem",
+      name_ar: "لينا قاسم",
+      image_url: null,
+      role_en: "Honeymoon in the Maldives",
+      role_ar: "شهر عسل في المالديف",
+      quote_en: "The Maldives package was a dream. Every detail was handled and we just enjoyed ourselves.",
+      quote_ar: "باقة المالديف كانت حلما. تم الاعتناء بكل التفاصيل واستمتعنا بالرحلة فقط.",
+      rating: 5,
+      sort_order: 3,
+      is_active: true,
+    },
+  ] satisfies Testimonial[],
+};
+
 function publicClient() {
   const key = SUPABASE_PUBLISHABLE_KEY;
   return createClient<Database>(SUPABASE_URL, key, {
@@ -56,31 +166,36 @@ function publicClient() {
 /* ------------------------------- public reads ------------------------------ */
 
 export const getSiteContent = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = publicClient();
-  const content = await supabase.from("site_content").select(CONTENT_COLS);
-  let testimonialRows: Testimonial[] = [];
-  const testimonials = await supabase
-    .from("testimonials")
-    .select(TESTIMONIAL_COLS)
-    .eq("is_active", true)
-    .order("sort_order");
-  if (content.error) throw content.error;
-  if (testimonials.error) {
-    const fallback = await supabase
+  try {
+    const supabase = publicClient();
+    const content = await supabase.from("site_content").select(CONTENT_COLS);
+    let testimonialRows: Testimonial[] = [];
+    const testimonials = await supabase
       .from("testimonials")
-      .select(TESTIMONIAL_COLS_BASE)
+      .select(TESTIMONIAL_COLS)
       .eq("is_active", true)
       .order("sort_order");
-    if (fallback.error) throw fallback.error;
-    testimonialRows = withDefaultImageUrl((fallback.data ?? []) as TestimonialWithoutImage[]);
-  } else {
-    testimonialRows = (testimonials.data ?? []) as Testimonial[];
+    if (content.error) throw content.error;
+    if (testimonials.error) {
+      const fallback = await supabase
+        .from("testimonials")
+        .select(TESTIMONIAL_COLS_BASE)
+        .eq("is_active", true)
+        .order("sort_order");
+      if (fallback.error) throw fallback.error;
+      testimonialRows = withDefaultImageUrl((fallback.data ?? []) as TestimonialWithoutImage[]);
+    } else {
+      testimonialRows = (testimonials.data ?? []) as Testimonial[];
+    }
+    const sections: Record<string, { en: Record<string, string>; ar: Record<string, string> }> = {};
+    for (const row of (content.data ?? []) as SiteContentRow[]) {
+      sections[row.section] = { en: row.data_en ?? {}, ar: row.data_ar ?? {} };
+    }
+    return { sections, testimonials: testimonialRows };
+  } catch (error) {
+    console.error("[Supabase] Falling back to bundled site content.", error);
+    return FALLBACK_SITE_CONTENT;
   }
-  const sections: Record<string, { en: Record<string, string>; ar: Record<string, string> }> = {};
-  for (const row of (content.data ?? []) as SiteContentRow[]) {
-    sections[row.section] = { en: row.data_en ?? {}, ar: row.data_ar ?? {} };
-  }
-  return { sections, testimonials: testimonialRows };
 });
 
 export const subscribeEmail = createServerFn({ method: "POST" })

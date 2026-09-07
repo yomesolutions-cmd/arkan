@@ -45,9 +45,11 @@ const contentQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/")({
-  loader: ({ context }) => {
-    void context.queryClient.ensureQueryData(homeQuery);
-    void context.queryClient.ensureQueryData(contentQuery);
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(homeQuery),
+      context.queryClient.ensureQueryData(contentQuery),
+    ]);
   },
   errorComponent: () => (
     <div className="p-16 text-center text-sm text-muted-foreground">

@@ -4,6 +4,139 @@ import { z } from "zod";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/config";
 import type { Database } from "@/integrations/supabase/types";
 
+type Destination = Database["public"]["Tables"]["destinations"]["Row"];
+type TourPackage = Database["public"]["Tables"]["tour_packages"]["Row"];
+
+const FALLBACK_DESTINATIONS: Destination[] = [
+  {
+    id: "00000000-0000-4000-8000-000000000001",
+    slug: "istanbul",
+    name: "Istanbul",
+    name_ar: "إسطنبول",
+    country: "Türkiye",
+    country_ar: "تركيا",
+    region: "Europe / Asia",
+    description: "A city where east and west meet: bazaars, palaces and the Bosphorus.",
+    description_ar: "مدينة يلتقي فيها الشرق والغرب: أسواق، قصور، ومضيق البوسفور.",
+    image_key: "dest1",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000002",
+    slug: "dubai",
+    name: "Dubai",
+    name_ar: "دبي",
+    country: "United Arab Emirates",
+    country_ar: "الإمارات",
+    region: "Middle East",
+    description: "Modern towers, golden desert and world-class shopping.",
+    description_ar: "أبراج حديثة، صحراء ذهبية، وتسوق عالمي.",
+    image_key: "dest2",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000003",
+    slug: "maldives",
+    name: "Maldives",
+    name_ar: "المالديف",
+    country: "Indian Ocean",
+    country_ar: "المحيط الهندي",
+    region: "Islands",
+    description: "Overwater villas, coral reefs and crystal-clear sea.",
+    description_ar: "فلل فوق الماء، شعاب مرجانية، وبحر صاف لا ينسى.",
+    image_key: "dest3",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000004",
+    slug: "paris",
+    name: "Paris",
+    name_ar: "باريس",
+    country: "France",
+    country_ar: "فرنسا",
+    region: "Europe",
+    description: "Romantic streets, museums and unforgettable food.",
+    description_ar: "شوارع ساحرة، متاحف، وتجارب طعام أوروبية رائعة.",
+    image_key: "dest4",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+];
+
+const FALLBACK_TOURS: TourPackage[] = [
+  {
+    id: "00000000-0000-4000-8000-000000000101",
+    slug: "bosphorus-cappadocia",
+    title: "Bosphorus & Cappadocia Escape",
+    title_ar: "هروب البوسفور وكابادوكيا",
+    destination_id: FALLBACK_DESTINATIONS[0].id,
+    place: "Türkiye",
+    place_ar: "تركيا",
+    days: 6,
+    nights: 5,
+    min_people: 2,
+    max_people: 12,
+    price: 740,
+    rating: 4.9,
+    category: "Culture",
+    description: "Istanbul highlights plus a balloon sunrise in Cappadocia.",
+    description_ar: "أبرز معالم إسطنبول مع شروق المناطيد في كابادوكيا.",
+    image_key: "dest1",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000102",
+    slug: "dubai-city-desert",
+    title: "Dubai City Lights & Desert",
+    title_ar: "أضواء دبي والصحراء",
+    destination_id: FALLBACK_DESTINATIONS[1].id,
+    place: "United Arab Emirates",
+    place_ar: "الإمارات العربية المتحدة",
+    days: 5,
+    nights: 4,
+    min_people: 2,
+    max_people: 10,
+    price: 890,
+    rating: 4.8,
+    category: "City",
+    description: "Burj Khalifa, marina cruise and an overnight desert camp.",
+    description_ar: "برج خليفة، رحلة بحرية في المارينا، وليلة في مخيم صحراوي.",
+    image_key: "dest2",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000103",
+    slug: "maldives-overwater",
+    title: "Maldives Overwater Retreat",
+    title_ar: "استجمام فوق مياه المالديف",
+    destination_id: FALLBACK_DESTINATIONS[2].id,
+    place: "Maldives",
+    place_ar: "المالديف",
+    days: 7,
+    nights: 6,
+    min_people: 2,
+    max_people: 2,
+    price: 1650,
+    rating: 5,
+    category: "Beach",
+    description: "Private overwater villa with snorkelling and spa days.",
+    description_ar: "فيلا خاصة فوق الماء مع سنوركلينغ وأيام سبا.",
+    image_key: "dest3",
+    featured: true,
+    created_at: "2026-08-01T00:00:00.000Z",
+  },
+];
+
+const FALLBACK_HOME_CONTENT = {
+  destinations: FALLBACK_DESTINATIONS,
+  tours: FALLBACK_TOURS,
+};
+
 function publicClient() {
   const key = SUPABASE_PUBLISHABLE_KEY;
   return createClient<Database>(SUPABASE_URL, key, {
@@ -20,14 +153,19 @@ function publicClient() {
 }
 
 export const getHomeContent = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = publicClient();
-  const [destinations, tours] = await Promise.all([
-    supabase.from("destinations").select("*").order("featured", { ascending: false }).limit(4),
-    supabase.from("tour_packages").select("*").order("featured", { ascending: false }).limit(3),
-  ]);
-  if (destinations.error) throw destinations.error;
-  if (tours.error) throw tours.error;
-  return { destinations: destinations.data, tours: tours.data };
+  try {
+    const supabase = publicClient();
+    const [destinations, tours] = await Promise.all([
+      supabase.from("destinations").select("*").order("featured", { ascending: false }).limit(4),
+      supabase.from("tour_packages").select("*").order("featured", { ascending: false }).limit(3),
+    ]);
+    if (destinations.error) throw destinations.error;
+    if (tours.error) throw tours.error;
+    return { destinations: destinations.data, tours: tours.data };
+  } catch (error) {
+    console.error("[Supabase] Falling back to bundled homepage catalog.", error);
+    return FALLBACK_HOME_CONTENT;
+  }
 });
 
 const searchSchema = z.object({
